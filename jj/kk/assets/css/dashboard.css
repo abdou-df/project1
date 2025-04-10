@@ -1,0 +1,344 @@
+/**
+ * Garage Management System - Dashboard Styles
+ * Improved CSS for the admin dashboard
+ */
+
+:root {
+  --primary-color: #e67e22;
+  --primary-dark: #d35400;
+  --secondary-color: #3498db;
+  --success-color: #2ecc71;
+  --info-color: #00c0ef;
+  --warning-color: #f39c12;
+  --danger-color: #f56954;
+  --light-color: #f8f9fa;
+  --dark-color: #343a40;
+  --gray-color: #6c757d;
+  --gray-light: #f4f6f9;
+  --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --transition-speed: 0.3s;
+}
+
+/* Stats Cards */
+.stat-card {
+  transition: all 0.3s ease;
+  border-radius: 12px;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: white;
+}
+
+/* Background colors for stat icons */
+.bg-customer {
+  background-color: var(--primary-color);
+}
+
+.bg-sales {
+  background-color: var(--info-color);
+}
+
+.bg-services {
+  background-color: var(--success-color);
+}
+
+.bg-employees {
+  background-color: var(--warning-color);
+}
+
+.bg-suppliers {
+  background-color: var(--danger-color);
+}
+
+.bg-products {
+  background-color: var(--secondary-color);
+}
+
+/* Card styling */
+.card {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.card:hover {
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Donut Chart */
+.chart-container {
+  position: relative;
+}
+
+.donut-chart {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+}
+
+.donut-segment {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: conic-gradient(
+    var(--segment-color) 0% var(--segment-size, 0%),
+    transparent var(--segment-size, 0%) 100%
+  );
+  transform: rotate(calc(3.6deg * var(--segment-start, 0)));
+}
+
+.chart-container::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60%;
+  height: 60%;
+  background-color: white;
+  border-radius: 50%;
+}
+
+/* Service Stat Box */
+.service-stat-box {
+  transition: all 0.3s ease;
+}
+
+.service-stat-box:hover {
+  background-color: #f8f9fa;
+}
+
+/* Calendar Styles */
+.calendar-container {
+  width: 100%;
+}
+
+.calendar-days-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: 500;
+  color: #6c757d;
+  margin-bottom: 10px;
+}
+
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.calendar-day {
+  position: relative;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 14px;
+}
+
+.calendar-day.today {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.calendar-event {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+/* Activity Timeline */
+.activity-timeline {
+  position: relative;
+  padding: 0 1rem;
+}
+
+.activity-timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 20px;
+  width: 2px;
+  background-color: #e9ecef;
+}
+
+.activity-item {
+  position: relative;
+  padding: 1.5rem 0 1.5rem 0;
+  padding-right: 50px;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-icon {
+  position: absolute;
+  right: 0;
+  top: 1.5rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+  z-index: 1;
+}
+
+.activity-content {
+  width: 100%;
+}
+
+/* Avatar Styles */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-text {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+  .calendar-day {
+    height: 35px;
+    font-size: 12px;
+  }
+  
+  .activity-timeline::before {
+    right: 15px;
+  }
+  
+  .activity-item {
+    padding-right: 40px;
+  }
+  
+  .activity-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 0.8rem;
+  }
+}
+
+/* Animation for counters */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.counter {
+  animation: countUp 1s ease-out forwards;
+}
+
+/* Improved button styles */
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.rounded-pill {
+  border-radius: 50rem;
+}
+
+/* Text colors */
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+.text-success {
+  color: var(--success-color) !important;
+}
+
+.text-warning {
+  color: var(--warning-color) !important;
+}
+
+.text-info {
+  color: var(--info-color) !important;
+}
+
+/* Background colors */
+.bg-primary {
+  background-color: var(--primary-color) !important;
+}
+
+.bg-success {
+  background-color: var(--success-color) !important;
+}
+
+.bg-warning {
+  background-color: var(--warning-color) !important;
+}
+
+.bg-info {
+  background-color: var(--info-color) !important;
+}
+
+.bg-danger {
+  background-color: var(--danger-color) !important;
+}

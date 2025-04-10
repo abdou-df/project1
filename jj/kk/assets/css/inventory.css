@@ -1,0 +1,314 @@
+:root {
+    --primary-color: #4361ee;
+    --primary-hover: #3a56d4;
+    --secondary-color: #6c757d;
+    --success-color: #2ecc71;
+    --warning-color: #f39c12;
+    --danger-color: #e74c3c;
+    --info-color: #3498db; /* Added info color */
+    --light-color: #f8f9fa;
+    --dark-color: #343a40;
+    --border-color: #dee2e6; /* Added border color */
+    --border-radius: 0.5rem;
+    --box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --box-shadow-lg: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); /* Added larger shadow */
+    --transition: all 0.3s ease;
+}
+
+body {
+    font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f5f7fa;
+    color: #495057; /* Default text color */
+}
+
+.page-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.stat-card {
+    transition: var(--transition);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    border: 1px solid var(--border-color); /* Added subtle border */
+    background-color: #fff; /* Ensure background is white */
+    box-shadow: var(--box-shadow);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--box-shadow-lg);
+}
+
+/* Light backgrounds for stat card icons */
+.bg-primary-light { background-color: rgba(67, 97, 238, 0.1); }
+.bg-success-light { background-color: rgba(46, 204, 113, 0.1); }
+.bg-warning-light { background-color: rgba(243, 156, 18, 0.1); }
+.bg-danger-light { background-color: rgba(231, 76, 60, 0.1); }
+
+/* Ensure icons inside light backgrounds have correct color */
+.bg-primary-light .fas { color: var(--primary-color); }
+.bg-success-light .fas { color: var(--success-color); }
+.bg-warning-light .fas { color: var(--warning-color); }
+.bg-danger-light .fas { color: var(--danger-color); }
+
+/* Stat card icon circle size */
+.stat-card .rounded-circle {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem; /* Adjust icon size */
+}
+
+.text-primary { color: var(--primary-color) !important; }
+.text-success { color: var(--success-color) !important; }
+.text-warning { color: var(--warning-color) !important; }
+.text-danger { color: var(--danger-color) !important; }
+.text-info { color: var(--info-color) !important; }
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+.card {
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color); /* Consistent border */
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.25rem;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem; /* Slightly larger */
+    letter-spacing: 0.5px;
+    background-color: var(--light-color); /* Lighter background */
+    color: var(--secondary-color); /* Greyish text */
+    border-bottom-width: 1px; /* Ensure bottom border */
+    border-color: var(--border-color);
+    padding: 0.75rem 1rem; /* Adjust padding */
+    vertical-align: middle;
+}
+
+.table td {
+    vertical-align: middle;
+    padding: 0.75rem 1rem; /* Match header padding */
+    border-color: var(--border-color);
+}
+
+/* Table row hover effect */
+.table-hover tbody tr {
+    transition: background-color 0.15s ease-in-out;
+}
+.table-hover tbody tr:hover {
+    background-color: rgba(67, 97, 238, 0.04); /* Subtle primary hover */
+}
+
+/* Style for low stock rows */
+.table-warning,
+.table-warning > th,
+.table-warning > td {
+    --bs-table-bg-state: #fff3cd; /* Bootstrap warning background */
+    /* color: #664d03; */ /* Optional: Darker text for warning */
+}
+.table-hover .table-warning:hover {
+    --bs-table-hover-bg: #ffe_bold_placeholder_cc; /* Slightly darker warning on hover */
+}
+
+.avatar-sm {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem; /* Adjusted size */
+    background-color: #e9ecef; /* Default background */
+}
+
+.avatar-text {
+    display: inline-block;
+}
+
+.progress {
+    height: 8px; /* Slightly thicker */
+    background-color: #e9ecef;
+    border-radius: 1rem;
+}
+
+.progress-bar {
+    border-radius: 1rem;
+}
+
+.badge {
+    padding: 0.4em 0.65em;
+    font-weight: 500;
+    border-radius: 30px;
+    font-size: 0.75rem; /* Slightly smaller */
+}
+
+.bg-success { background-color: var(--success-color) !important; }
+.bg-warning { background-color: var(--warning-color) !important; }
+.bg-danger { background-color: var(--danger-color) !important; }
+
+.dropdown-menu {
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-lg);
+    border: 1px solid rgba(0,0,0,0.05);
+    padding: 0.5rem 0;
+}
+
+.dropdown-item {
+    padding: 0.5rem 1.25rem; /* Adjust padding */
+    transition: var(--transition);
+    font-size: 0.9rem;
+}
+
+.dropdown-item i {
+    width: 16px; /* Align icons */
+    text-align: center;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(67, 97, 238, 0.05);
+    color: var(--primary-color);
+}
+
+.dropdown-divider { margin: 0.25rem 0; }
+
+.page-link {
+    color: var(--primary-color);
+    border-radius: var(--border-radius);
+    margin: 0 0.15rem;
+    border: 1px solid var(--border-color);
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.page-item.disabled .page-link {
+    color: var(--secondary-color);
+    background-color: var(--light-color);
+    border-color: var(--border-color);
+}
+
+.form-control, .form-select {
+    border-radius: var(--border-radius);
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+}
+
+.input-group-text {
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+    background-color: var(--light-color);
+    border: 1px solid var(--border-color);
+}
+
+.input-group .form-control {
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+.modal-content {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: var(--box-shadow-lg);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.25rem;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-color);
+    padding: 0.75rem 1.25rem;
+}
+
+.alert {
+    border-radius: var(--border-radius);
+    border: none;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--box-shadow);
+}
+
+.alert-dismissible .btn-close { padding: 1rem; }
+
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.fade-in { animation: fadeIn 0.5s ease-in-out; }
+
+/* Tooltip styles */
+.tooltip-container { position: relative; display: inline-block; }
+.tooltip-container .tooltip-text { visibility: hidden; width: 120px; background-color: #333; color: #fff; text-align: center; border-radius: 6px; padding: 5px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -60px; opacity: 0; transition: opacity 0.3s; }
+.tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; }
+
+/* Custom switch */
+.custom-switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+.custom-switch input { opacity: 0; width: 0; height: 0; }
+.switch-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+.switch-slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+input:checked + .switch-slider { background-color: var(--primary-color); }
+input:checked + .switch-slider:before { transform: translateX(26px); }
+
+/* Responsive table */
+@media (max-width: 767.98px) { .responsive-table { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; } }
+
+/* Dark mode toggle */
+.dark-mode { background-color: #1a1a1a; color: #e0e0e0; }
+.dark-mode body { color: #e0e0e0; }
+.dark-mode .card, .dark-mode .card-header, .dark-mode .modal-content, .dark-mode .form-control, .dark-mode .form-select, .dark-mode .input-group-text { background-color: #2c2c2c; color: #e0e0e0; border-color: #444; }
+.dark-mode .page-header { border-bottom-color: #444; }
+.dark-mode .stat-card { border-color: #444; background-color: #2c2c2c; }
+.dark-mode .text-dark { color: #e0e0e0 !important; }
+.dark-mode .text-muted { color: #888 !important; }
+.dark-mode .table { color: #e0e0e0; }
+.dark-mode .table th { background-color: #333; color: #aaa; border-color: #444; }
+.dark-mode .table td { border-color: #444; }
+.dark-mode .table-hover tbody tr:hover { background-color: rgba(255, 255, 255, 0.05); }
+.dark-mode .bg-light { background-color: #333 !important; }
+.dark-mode .dropdown-menu { background-color: #2c2c2c; border-color: #444; }
+.dark-mode .dropdown-item { color: #e0e0e0; }
+.dark-mode .dropdown-item:hover { background-color: #383838; color: var(--primary-color); }
+.dark-mode .dropdown-divider { border-color: #444; }
+.dark-mode .page-link { color: var(--primary-color); background-color: #2c2c2c; border-color: #444; }
+.dark-mode .page-item.active .page-link { background-color: var(--primary-color); border-color: var(--primary-color); color: #fff; }
+.dark-mode .page-item.disabled .page-link { color: #666; background-color: #222; border-color: #444; }
+.dark-mode .modal-header, .dark-mode .modal-footer { border-color: #444; }
+.dark-mode .avatar-sm { background-color: #444; } 
