@@ -20,8 +20,4 @@
 - MySQL 5.7 أو أعلى
 - خادم ويب (Apache/Nginx)
 
-## معلومات تسجيل الدخول
 
-- **المدير**: admin@garage.com / password
-- **الموظف**: employee@garage.com / password
-- **العميل**: customer@garage.com / password
