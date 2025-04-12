@@ -99,12 +99,61 @@ if (!empty($searchQuery)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Customer Management</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+   <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> -->
     <link rel="stylesheet" href="assets/css/customers.css">
+    <link rel="stylesheet" href="assets/css/sidebar.css">
 </head>
 <body>
-    <div class="dashboard-container">
-   
+    
+ 
+        <!-- <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-car-side"></i>
+                <span>AutoManager</span>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="#"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li class="active"><a href="#"><i class="fas fa-users"></i> Customers</a></li>
+                    <li><a href="#"><i class="fas fa-car"></i> Vehicles</a></li>
+                    <li><a href="#"><i class="fas fa-wrench"></i> Services</a></li>
+                    <li><a href="#"><i class="fas fa-file-invoice-dollar"></i> Invoices</a></li>
+                    <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </aside>
+             -->
+        
+        <!-- Main conte  nt area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-search">
+                    <form action="" method="GET">
+                        <div class="search-container">
+                            <i class="fas fa-search"></i>
+                            <input type="text" name="search" placeholder="Search customers..." value="<?php echo htmlspecialchars($searchQuery); ?>">
+                            <?php if(!empty($searchQuery)): ?>
+                                <a href="customers.php" class="clear-search"><i class="fas fa-times"></i></a>
+                            <?php endif; ?>
+                            <button type="submit">Search</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="header-actions">
+                    <div class="notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </div>
+                    <div class="user-profile">
+                        <img src="assets/images/default-user.png" alt="Admin">
+                        <span>Admin User</span>
+                    </div>
+                </div>
+            </header>
+
             <!-- Page content -->
             <div class="page-content">
                 <!-- Page header with stats -->
@@ -417,6 +466,6 @@ if (!empty($searchQuery)) {
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="assets/js/customers.js"></script>
 </body>
 </html>

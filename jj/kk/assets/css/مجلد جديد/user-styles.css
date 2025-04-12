@@ -1,0 +1,365 @@
+/* ===== USER MANAGEMENT STYLES ===== */
+
+/* Override for sidebar issue */
+.sidebar .nav-item .nav-link.collapsed::after,
+.sidebar .nav-item .nav-link:not(.collapsed)::after {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: auto;
+    vertical-align: middle;
+    border-top: 0.3em solid;
+    border-right: 0.3em solid transparent;
+    border-bottom: 0;
+    border-left: 0.3em solid transparent;
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.sidebar .nav-item .nav-link.collapsed::after {
+    transform: translateY(-50%) rotate(-90deg);
+}
+
+.sidebar .nav-item .collapse {
+    display: none;
+}
+
+.sidebar .nav-item .collapse.show {
+    display: block;
+}
+
+.sidebar .nav-item .collapsing {
+    height: 0;
+    overflow: hidden;
+    transition: height 0.35s ease;
+}
+
+/* Main Layout & Typography - Scoped to user content only */
+.user-section {
+    background-color: #f8f9fa;
+    font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+}
+
+.user-section .page-header {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.user-section .page-header h2 {
+    font-weight: 700;
+    margin-bottom: 0;
+}
+
+/* User Stats Cards */
+.user-section .stat-card {
+    transition: all 0.3s ease;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.user-section .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.user-section .stat-card .card-body {
+    padding: 1.5rem;
+}
+
+.user-section .stat-card .counter {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.user-section .stat-card .rounded-circle {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-section .bg-primary-light {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.user-section .bg-success-light {
+    background-color: rgba(25, 135, 84, 0.1);
+}
+
+.user-section .bg-warning-light {
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+/* Search and Filter - Scoped to user section */
+.user-section .card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.user-section .card-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.user-section .form-control, 
+.user-section .form-select {
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    font-size: 0.9rem;
+}
+
+.user-section .form-control:focus, 
+.user-section .form-select:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
+    border-color: #86b7fe;
+}
+
+.user-section .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.user-section .btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.user-section .input-group-text {
+    background-color: #f8f9fa;
+    border-color: #e0e0e0;
+    color: #6c757d;
+}
+
+/* User Table - Scoped to user content */
+.user-section .table {
+    margin-bottom: 0;
+}
+
+.user-section .table th {
+    font-weight: 600;
+    color: #4a5568;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    padding: 1rem;
+}
+
+.user-section .table td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+.user-section .table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.user-section .table tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.user-section .avatar-sm {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+.user-section .avatar-text {
+    font-size: 1rem;
+}
+
+/* Badge styles - carefully scoped */
+.user-section .badge {
+    font-weight: 500;
+    padding: 0.5em 0.8em;
+    border-radius: 30px;
+}
+
+.user-section .badge.bg-primary {
+    background-color: #0d6efd !important;
+}
+
+.user-section .badge.bg-info {
+    background-color: #0dcaf0 !important;
+}
+
+.user-section .badge.bg-success {
+    background-color: #198754 !important;
+}
+
+.user-section .badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529;
+}
+
+.user-section .badge.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+/* Action Buttons - scoped to user content */
+.user-section .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.25rem;
+}
+
+.user-section .btn-outline-primary {
+    color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.user-section .btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+.user-section .dropdown-menu {
+    border-radius: 8px;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 0;
+    min-width: 180px;
+}
+
+.user-section .dropdown-item {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.user-section .dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.user-section .dropdown-item i {
+    width: 18px;
+}
+
+/* Pagination - scoped to user section */
+.user-section .pagination {
+    margin-bottom: 0;
+}
+
+.user-section .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.user-section .page-link {
+    color: #0d6efd;
+    border: 1px solid #dee2e6;
+    padding: 0.5rem 0.75rem;
+}
+
+.user-section .page-link:hover {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    color: #0a58ca;
+}
+
+.user-section .page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #fff;
+}
+
+/* Responsiveness - scoped to user section*/
+@media (max-width: 768px) {
+    .user-section .table-responsive {
+        border-radius: 10px;
+    }
+    
+    .user-section .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .user-section .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .user-section .page-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+/* Animation effects - carefully scoped */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-section .card, 
+.user-section .page-header, 
+.user-section .stat-card {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Dark mode support - scoped to user section */
+@media (prefers-color-scheme: dark) {
+    .user-section {
+        background-color: #1a1a1a;
+        color: #e0e0e0;
+    }
+    
+    .user-section .card, 
+    .user-section .table {
+        background-color: #252525;
+        color: #e0e0e0;
+    }
+    
+    .user-section .card-header, 
+    .user-section .bg-light, 
+    .user-section .input-group-text {
+        background-color: #2c2c2c !important;
+        color: #e0e0e0;
+    }
+    
+    .user-section .form-control, 
+    .user-section .form-select {
+        background-color: #333;
+        border-color: #444;
+        color: #e0e0e0;
+    }
+    
+    .user-section .text-muted, 
+    .user-section .text-dark {
+        color: #adb5bd !important;
+    }
+    
+    .user-section .dropdown-menu {
+        background-color: #333;
+        border-color: #444;
+    }
+    
+    .user-section .dropdown-item {
+        color: #e0e0e0;
+    }
+    
+    .user-section .dropdown-item:hover {
+        background-color: #444;
+    }
+    
+    .user-section .page-link {
+        background-color: #333;
+        border-color: #444;
+        color: #adb5bd;
+    }
+} 

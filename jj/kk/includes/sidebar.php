@@ -29,7 +29,7 @@
             </li>
             
             <li>
-                <a href="#" class="nav-link d-flex align-items-center justify-content-between <?php echo ($page == 'users') ? 'active' : ''; ?>" 
+                <a href="#" class="nav-link d-flex align-items-center justify-content-between <?php echo (in_array($page, ['users', 'employees', 'customers'])) ? 'active' : ''; ?>" 
                    onclick="window.location.href='index.php?page=users'; return false;">
                     <div>
                         <i class="fa-solid fa-users"></i>
@@ -38,21 +38,21 @@
                     <button class="btn-collapse ms-2" type="button" 
                             data-bs-toggle="collapse" 
                             data-bs-target="#usersSubmenu" 
-                            aria-expanded="<?php echo ($page == 'users') ? 'true' : 'false'; ?>"
+                            aria-expanded="<?php echo (in_array($page, ['users', 'employees', 'customers'])) ? 'true' : 'false'; ?>"
                             onclick="event.stopPropagation();">
                         <i class="fa-solid fa-chevron-down"></i>
                     </button>
                 </a>
-                <div class="collapse <?php echo ($page == 'users') ? 'show' : ''; ?>" id="usersSubmenu">
+                <div class="collapse <?php echo (in_array($page, ['users', 'employees', 'customers'])) ? 'show' : ''; ?>" id="usersSubmenu">
                     <ul class="nav-submenu">
                         <li>
                             <a class="submenu-item" href="index.php?page=users"><i class="fa-solid fa-circle fa-xs me-2"></i><span>All Users</span></a>
                         </li>
                         <li>
-                            <a class="submenu-item" href="index.php?page=users&type=employee"><i class="fa-solid fa-circle fa-xs me-2"></i><span>Employees</span></a>
+                            <a class="submenu-item" href="index.php?page=employees"><i class="fa-solid fa-circle fa-xs me-2"></i><span>Employees</span></a>
                         </li>
                         <li>
-                            <a class="submenu-item" href="index.php?page=users&type=customer"><i class="fa-solid fa-circle fa-xs me-2"></i><span>Customers</span></a>
+                            <a class="submenu-item" href="index.php?page=customers"><i class="fa-solid fa-circle fa-xs me-2"></i><span>Customers</span></a>
                         </li>
                     </ul>
                 </div>
