@@ -3,6 +3,13 @@
 require_once dirname(__FILE__) . '/../config/config.php';
 require_once dirname(__FILE__) . '/../includes/functions.php';
 require_once dirname(__FILE__) . '/../includes/auth.php';
+require_once dirname(__FILE__) . '/../includes/database.php';
+
+// Initialize database connection
+$conn = getDbConnection();
+if (!$conn) {
+    die("Database connection failed");
+}
 
 // Add CSS links
 echo '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">';
@@ -11,6 +18,7 @@ echo '<link rel="stylesheet" href="assets/css/user-styles.css">';
 
 // Initialize variables
 $users = [];
+$pending_users = [];
 $total_users = 0;
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $search = isset($_GET['search']) ? sanitize($_GET['search']) : '';
@@ -26,151 +34,298 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     switch ($action) {
         case 'delete':
-            // Delete user
-            // In real application, you would delete from database
-            $_SESSION['success'] = 'User deleted successfully';
+            // Delete user from database
+            $delete_sql = "DELETE FROM users WHERE id = ?";
+            $stmt = $conn->prepare($delete_sql);
+            $stmt->bindParam(1, $user_id, PDO::PARAM_INT);
+            if ($stmt->execute()) {
+                $_SESSION['success'] = 'User deleted successfully';
+            } else {
+                $_SESSION['error'] = 'Failed to delete user';
+            }
             break;
             
         case 'activate':
-            // Activate user
-            // In real application, you would update database
-            $_SESSION['success'] = 'User activated successfully';
+            // Activate user in database
+            $activate_sql = "UPDATE users SET status = ? WHERE id = ?";
+            $active_status = STATUS_ACTIVE;
+            $stmt = $conn->prepare($activate_sql);
+            $stmt->bindParam(1, $active_status, PDO::PARAM_STR);
+            $stmt->bindParam(2, $user_id, PDO::PARAM_INT);
+            if ($stmt->execute()) {
+                $_SESSION['success'] = 'User activated successfully';
+            } else {
+                $_SESSION['error'] = 'Failed to activate user';
+            }
             break;
             
         case 'deactivate':
-            // Deactivate user
-            // In real application, you would update database
-            $_SESSION['success'] = 'User deactivated successfully';
+            // Deactivate user in database
+            $deactivate_sql = "UPDATE users SET status = ? WHERE id = ?";
+            $inactive_status = STATUS_INACTIVE;
+            $stmt = $conn->prepare($deactivate_sql);
+            $stmt->bindParam(1, $inactive_status, PDO::PARAM_STR);
+            $stmt->bindParam(2, $user_id, PDO::PARAM_INT);
+            if ($stmt->execute()) {
+                $_SESSION['success'] = 'User deactivated successfully';
+            } else {
+                $_SESSION['error'] = 'Failed to deactivate user';
+            }
+            break;
+        
+        // Add cases for approve/reject
+        case 'approve':
+            // Approve user (set status to active)
+            $approve_sql = "UPDATE users SET status = ? WHERE id = ? AND status = ?";
+            $active_status = 'active';
+            $pending_status = 'pending_approval';
+            $stmt = $conn->prepare($approve_sql);
+            $stmt->bindParam(1, $active_status, PDO::PARAM_STR);
+            $stmt->bindParam(2, $user_id, PDO::PARAM_INT);
+            $stmt->bindParam(3, $pending_status, PDO::PARAM_STR);
+            if ($stmt->execute()) {
+                $_SESSION['success'] = 'User approved successfully';
+                // TODO: Add notification logic here (e.g., email the user)
+            } else {
+                $_SESSION['error'] = 'Failed to approve user';
+            }
+            break;
+
+        case 'reject':
+            // Reject user (set status to rejected or delete)
+            // Option 1: Set status to rejected
+            $reject_sql = "UPDATE users SET status = ? WHERE id = ? AND status = ?";
+            $rejected_status = 'rejected';
+            $pending_status = 'pending_approval';
+            $stmt = $conn->prepare($reject_sql);
+            $stmt->bindParam(1, $rejected_status, PDO::PARAM_STR);
+            $stmt->bindParam(2, $user_id, PDO::PARAM_INT);
+            $stmt->bindParam(3, $pending_status, PDO::PARAM_STR);
+            
+            // Option 2: Delete the user record (uncomment if preferred)
+            // $reject_sql = "DELETE FROM users WHERE id = ? AND status = ?";
+            // $pending_status = 'pending_approval';
+            // $stmt = $conn->prepare($reject_sql);
+            // $stmt->bindParam(1, $user_id, PDO::PARAM_INT);
+            // $stmt->bindParam(2, $pending_status, PDO::PARAM_STR);
+
+            if ($stmt->execute()) {
+                $_SESSION['success'] = 'User registration rejected';
+            } else {
+                $_SESSION['error'] = 'Failed to reject user registration';
+            }
             break;
     }
+    // Redirect after POST to prevent form resubmission
+    header("Location: " . $_SERVER['PHP_SELF'] . "?" . http_build_query($_GET));
+    exit;
 }
 
-// Get users data (same as the original file)
-$users = [
-    [
-        'id' => 1,
-        'username' => 'admin',
-        'email' => 'admin@garage.com',
-        'first_name' => 'Admin',
-        'last_name' => 'User',
-        'role' => ROLE_ADMIN,
-        'phone' => '555-123-4567',
-        'status' => STATUS_ACTIVE,
-        'last_login' => '2025-03-20 19:30:00',
-        'created_at' => '2025-01-01 00:00:00',
-        'type' => 'employee'
-    ],
-    [
-        'id' => 2,
-        'username' => 'manager',
-        'email' => 'manager@garage.com',
-        'first_name' => 'Manager',
-        'last_name' => 'User',
-        'role' => ROLE_MANAGER,
-        'phone' => '555-234-5678',
-        'status' => STATUS_ACTIVE,
-        'last_login' => '2025-03-20 18:45:00',
-        'created_at' => '2025-01-01 00:00:00',
-        'type' => 'employee'
-    ],
-    [
-        'id' => 3,
-        'username' => 'mechanic1',
-        'email' => 'mechanic1@garage.com',
-        'first_name' => 'John',
-        'last_name' => 'Smith',
-        'role' => ROLE_EMPLOYEE,
-        'phone' => '555-345-6789',
-        'status' => STATUS_ACTIVE,
-        'last_login' => '2025-03-20 17:15:00',
-        'created_at' => '2025-01-01 00:00:00',
-        'type' => 'employee'
-    ],
-    [
-        'id' => 4,
-        'username' => 'mechanic2',
-        'email' => 'mechanic2@garage.com',
-        'first_name' => 'Mike',
-        'last_name' => 'Johnson',
-        'role' => ROLE_EMPLOYEE,
-        'phone' => '555-456-7890',
-        'status' => STATUS_INACTIVE,
-        'last_login' => '2025-03-19 16:30:00',
-        'created_at' => '2025-01-01 00:00:00',
-        'type' => 'employee'
-    ],
-    [
-        'id' => 5,
-        'username' => 'customer1',
-        'email' => 'customer1@example.com',
-        'first_name' => 'Sarah',
-        'last_name' => 'Williams',
-        'role' => ROLE_CUSTOMER,
-        'phone' => '555-567-8901',
-        'status' => STATUS_ACTIVE,
-        'last_login' => '2025-03-20 19:00:00',
-        'created_at' => '2025-01-01 00:00:00',
-        'type' => 'customer'
-    ],
-    [
-        'id' => 6,
-        'username' => 'customer2',
-        'email' => 'customer2@example.com',
-        'first_name' => 'David',
-        'last_name' => 'Brown',
-        'role' => ROLE_CUSTOMER,
-        'phone' => '555-678-9012',
-        'status' => STATUS_ACTIVE,
-        'last_login' => '2025-03-20 15:30:00',
-        'created_at' => '2025-01-01 00:00:00',
-        'type' => 'customer'
-    ]
-];
+// --- Fetch Pending Approval Users --- 
+$current_user_role = $_SESSION['user_role'] ?? null; 
+$can_approve = ($current_user_role === 'admin' || $current_user_role === 'manager');
 
-// Filter users based on type
-if ($type !== 'all') {
-    $users = array_filter($users, function($user) use ($type) {
-        return $user['type'] === $type;
-    });
-}
+if ($can_approve) {
+    $pending_sql = "SELECT id, username, email, first_name, last_name, role, requested_at FROM users WHERE status = ?";
+    $pending_params = ['pending_approval'];
 
-// Filter users based on search criteria
-if ($search || $role || $status) {
-    $filtered_users = [];
-    foreach ($users as $user) {
-        $match = true;
-        
-        if ($search) {
-            $search_str = strtolower($search);
-            $user_str = strtolower($user['username'] . ' ' . 
-                                 $user['email'] . ' ' . 
-                                 $user['first_name'] . ' ' . 
-                                 $user['last_name'] . ' ' . 
-                                 $user['phone']);
-            if (strpos($user_str, $search_str) === false) {
-                $match = false;
-            }
-        }
-        
-        if ($role && $user['role'] !== $role) {
-            $match = false;
-        }
-        
-        if ($status && $user['status'] !== $status) {
-            $match = false;
-        }
-        
-        if ($match) {
-            $filtered_users[] = $user;
-        }
+    // Admins see all pending users. Managers only see pending employees.
+    if ($current_user_role === 'manager') {
+        $pending_sql .= " AND role = ?";
+        $pending_params[] = 'employee';
     }
-    $users = $filtered_users;
+    
+    $pending_sql .= " ORDER BY requested_at ASC";
+
+    try {
+        $pending_stmt = $conn->prepare($pending_sql);
+        $pending_stmt->execute($pending_params);
+        $pending_users = $pending_stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error fetching pending users: " . $e->getMessage());
+        // Handle error appropriately, maybe set a session message
+        $_SESSION['error'] = "Could not fetch pending approval list.";
+        $pending_users = [];
+    }
+}
+// --- End Fetch Pending Approval Users ---
+
+// Build SQL query based on filters
+$sql = "SELECT u.*, 
+        CASE 
+            WHEN u.role = 'admin' OR u.role = 'employee' THEN 'employee' 
+            ELSE 'customer' 
+        END AS type 
+        FROM users u WHERE 1=1";
+
+// Default filter: only show active or inactive users, exclude pending/rejected unless specified
+if (!isset($_GET['show_status']) || !in_array($_GET['show_status'], ['pending_approval', 'rejected', 'all'])) {
+    $sql .= " AND (u.status = ? OR u.status = ?)";
+    $params[] = 'active';
+    $params[] = 'inactive';
+} else if (isset($_GET['show_status']) && $_GET['show_status'] !== 'all') {
+    // Allow showing specific statuses like pending or rejected if requested via URL
+    $sql .= " AND u.status = ?";
+    $params[] = $_GET['show_status'];
+}
+// Note: If show_status=all, no status filter is applied here.
+
+if ($search) {
+    $search_param = "%$search%";
+    $sql .= " AND (u.username LIKE ? OR u.email LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.phone LIKE ?)";
+    $params[] = $search_param;
+    $params[] = $search_param;
+    $params[] = $search_param;
+    $params[] = $search_param;
+    $params[] = $search_param;
 }
 
-$total_users = count($users);
+if ($role) {
+    $sql .= " AND u.role = ?";
+    $params[] = $role;
+}
+
+if ($type !== 'all') {
+    if ($type === 'employee') {
+        $sql .= " AND (u.role = 'admin' OR u.role = 'employee')";
+    } else if ($type === 'customer') {
+        $sql .= " AND u.role = 'customer'";
+    }
+}
+
+// Count total users for pagination
+$count_sql = "SELECT COUNT(*) as total FROM users u WHERE 1=1";
+
+// Apply default status filter to count query as well
+if (!isset($_GET['show_status']) || !in_array($_GET['show_status'], ['pending_approval', 'rejected', 'all'])) {
+    $count_sql .= " AND (u.status = ? OR u.status = ?)";
+} else if (isset($_GET['show_status']) && $_GET['show_status'] !== 'all') {
+    $count_sql .= " AND u.status = ?";
+}
+
+// Add the same WHERE conditions as the main query for other filters
+if ($search) {
+    $count_sql .= " AND (u.username LIKE ? OR u.email LIKE ? OR u.first_name LIKE ? OR u.last_name LIKE ? OR u.phone LIKE ?)";
+}
+
+if ($role) {
+    $count_sql .= " AND u.role = ?";
+}
+
+if ($type !== 'all') {
+    if ($type === 'employee') {
+        $count_sql .= " AND (u.role = 'admin' OR u.role = 'employee')";
+    } else if ($type === 'customer') {
+        $count_sql .= " AND u.role = 'customer'";
+    }
+}
+
+$stmt = $conn->prepare($count_sql);
+
+if (!empty($params)) {
+    foreach ($params as $index => $param) {
+        $stmt->bindValue($index + 1, $param, PDO::PARAM_STR);
+    }
+}
+
+$stmt->execute();
+$row = $stmt->fetch(PDO::FETCH_ASSOC);
+$total_users = $row['total'];
+
+// Add pagination to main query
+$sql .= " ORDER BY u.id DESC LIMIT ?, ?";
+$offset = ($page - 1) * $items_per_page;
+$params[] = $offset;
+$params[] = $items_per_page;
+
+$stmt = $conn->prepare($sql);
+
+if (!empty($params)) {
+    $param_count = count($params);
+    for ($i = 0; $i < $param_count - 2; $i++) {
+        // Bind string parameters for search, role, status
+        $stmt->bindValue($i + 1, $params[$i], PDO::PARAM_STR);
+    }
+    
+    // Bind integer parameters for pagination (limit and offset)
+    $stmt->bindValue($param_count - 1, $params[$param_count - 2], PDO::PARAM_INT); // offset
+    $stmt->bindValue($param_count, $params[$param_count - 1], PDO::PARAM_INT); // limit
+}
+
+// Execute the statement and check for errors
+if ($stmt->execute()) {
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} else {
+    // Log error if execution failed
+    error_log("Error executing user list query: " . implode(" | ", $stmt->errorInfo()));
+    $users = []; // Ensure users is an empty array on failure
+    // Optionally display a user-friendly message
+    // $_SESSION['error'] = 'Could not retrieve user list due to a database error.'; 
+}
+
+// Get total counts for statistics
+try {
+    // Count total users (this should match $total_users from earlier query)
+    $total_count_sql = "SELECT COUNT(*) as count FROM users";
+    $stmt = $conn->prepare($total_count_sql);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $total_users = $row['count'];
+    
+    // Count active users
+    $active_count_sql = "SELECT COUNT(*) as count FROM users WHERE status = ?";
+    $stmt = $conn->prepare($active_count_sql);
+    $active_status = STATUS_ACTIVE;
+    $stmt->bindParam(1, $active_status, PDO::PARAM_STR);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $total_active_users = $row['count'];
+    
+    // Count inactive users
+    $inactive_count_sql = "SELECT COUNT(*) as count FROM users WHERE status = ?";
+    $stmt = $conn->prepare($inactive_count_sql);
+    $inactive_status = STATUS_INACTIVE;
+    $stmt->bindParam(1, $inactive_status, PDO::PARAM_STR);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $total_inactive_users = $row['count'];
+    
+    // Count users by role
+    $admin_count_sql = "SELECT COUNT(*) as count FROM users WHERE role = ?";
+    $stmt = $conn->prepare($admin_count_sql);
+    $admin_role = ROLE_ADMIN;
+    $stmt->bindParam(1, $admin_role, PDO::PARAM_STR);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $total_admin_users = $row['count'];
+    
+    $employee_count_sql = "SELECT COUNT(*) as count FROM users WHERE role = ?";
+    $stmt = $conn->prepare($employee_count_sql);
+    $employee_role = ROLE_EMPLOYEE;
+    $stmt->bindParam(1, $employee_role, PDO::PARAM_STR);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $total_employee_users = $row['count'];
+    
+    $customer_count_sql = "SELECT COUNT(*) as count FROM users WHERE role = ?";
+    $stmt = $conn->prepare($customer_count_sql);
+    $customer_role = ROLE_CUSTOMER;
+    $stmt->bindParam(1, $customer_role, PDO::PARAM_STR);
+    $stmt->execute();
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $total_customer_users = $row['count'];
+} catch (PDOException $e) {
+    error_log("Database error when fetching statistics: " . $e->getMessage());
+    // Set default values in case of database error
+    $total_active_users = 0;
+    $total_inactive_users = 0;
+    $total_admin_users = 0;
+    $total_employee_users = 0;
+    $total_customer_users = 0;
+}
+
+// Calculate total pages for pagination
 $total_pages = ceil($total_users / $items_per_page);
-$start_index = ($page - 1) * $items_per_page;
-$users = array_slice($users, $start_index, $items_per_page);
 
 // Get user type for page title
 $page_title = 'All Users';
@@ -192,6 +347,68 @@ if ($type === 'employee') {
             </div>
             <?php unset($_SESSION['success']); ?>
         <?php endif; ?>
+
+        <!-- Pending Approvals Section -->
+        <?php if ($can_approve && !empty($pending_users)): ?>
+        <div class="card border-0 shadow-sm mb-4 bg-light">
+            <div class="card-header bg-warning text-dark py-3 d-flex align-items-center">
+                <i class="fas fa-user-clock me-2"></i>
+                <h5 class="mb-0">Pending User Approvals</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead>
+                            <tr class="table-light">
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Requested</th>
+                                <th width="150px">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($pending_users as $pending_user): ?>
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm me-2 bg-secondary-light rounded-circle">
+                                            <span class="avatar-text text-secondary"><?php echo substr($pending_user['first_name'] ?? 'U', 0, 1) . substr($pending_user['last_name'] ?? '', 0, 1); ?></span>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0"><?php echo htmlspecialchars(($pending_user['first_name'] ?? '') . ' ' . ($pending_user['last_name'] ?? '')); ?></h6>
+                                            <small class="text-muted"><?php echo htmlspecialchars($pending_user['email'] ?? 'N/A'); ?></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><?php echo htmlspecialchars($pending_user['username'] ?? 'N/A'); ?></td>
+                                <td><span class="badge rounded-pill bg-info"><?php echo htmlspecialchars(ucfirst($pending_user['role'] ?? 'N/A')); ?></span></td>
+                                <td><small class="text-muted"><?php echo isset($pending_user['requested_at']) ? date('Y-m-d H:i', strtotime($pending_user['requested_at'])) : 'N/A'; ?></small></td>
+                                <td>
+                                    <form method="POST" action="" style="display: inline;">
+                                        <input type="hidden" name="action" value="approve">
+                                        <input type="hidden" name="user_id" value="<?php echo $pending_user['id']; ?>">
+                                        <button type="submit" class="btn btn-sm btn-success me-1" title="Approve">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="" style="display: inline;">
+                                        <input type="hidden" name="action" value="reject">
+                                        <input type="hidden" name="user_id" value="<?php echo $pending_user['id']; ?>">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Reject">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+        <!-- End Pending Approvals Section -->
 
         <!-- Page header with improved styling -->
         <div class="page-header d-flex justify-content-between align-items-center mb-4">
@@ -221,14 +438,15 @@ if ($type === 'employee') {
 
         <!-- User stats with improved cards -->
         <div class="row mb-4">
+            <!-- Main stats (first row) -->
             <div class="col-md-4 mb-3">
                 <div class="card border-0 shadow-sm stat-card h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-1 small">Total Users</h6>
+                                <h6 class="text-muted mb-1 small">إجمالي المستخدمين</h6>
                                 <h3 class="mb-0 fw-bold counter"><?php echo $total_users; ?></h3>
-                                <p class="text-muted small mb-0">Active management</p>
+                                <p class="text-muted small mb-0">الإدارة النشطة</p>
                             </div>
                             <div class="bg-primary-light rounded-circle p-3">
                                 <i class="fas fa-users text-primary"></i>
@@ -242,13 +460,8 @@ if ($type === 'employee') {
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-1 small">Active Users</h6>
-                                <h3 class="mb-0 fw-bold counter"><?php 
-                                    $active_users = array_filter($users, function($user) { 
-                                        return $user['status'] === STATUS_ACTIVE; 
-                                    });
-                                    echo count($active_users); 
-                                ?></h3>
+                                <h6 class="text-muted mb-1 small">المستخدمون النشطون</h6>
+                                <h3 class="mb-0 fw-bold counter"><?php echo $total_active_users; ?></h3>
                                 <p class="text-muted small mb-0">Currently working</p>
                             </div>
                             <div class="bg-success-light rounded-circle p-3">
@@ -263,17 +476,64 @@ if ($type === 'employee') {
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="text-muted mb-1 small">Inactive Users</h6>
-                                <h3 class="mb-0 fw-bold counter"><?php 
-                                    $inactive_users = array_filter($users, function($user) { 
-                                        return $user['status'] === STATUS_INACTIVE; 
-                                    });
-                                    echo count($inactive_users); 
-                                ?></h3>
-                                <p class="text-muted small mb-0">Pending activation</p>
+                                <h6 class="text-muted mb-1 small">المستخدمون غير النشطين</h6>
+                                <h3 class="mb-0 fw-bold counter"><?php echo $total_inactive_users; ?></h3>
+                                <p class="text-muted small mb-0">في انتظار التفعيل</p>
                             </div>
                             <div class="bg-warning-light rounded-circle p-3">
                                 <i class="fas fa-user-clock text-warning"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User breakdown by role (second row) -->
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+                <div class="card border-0 shadow-sm stat-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1 small">المسؤولون</h6>
+                                <h3 class="mb-0 fw-bold counter"><?php echo $total_admin_users; ?></h3>
+                                <p class="text-muted small mb-0">مستخدمون بصلاحيات كاملة</p>
+                            </div>
+                            <div class="bg-info-light rounded-circle p-3">
+                                <i class="fas fa-user-shield text-info"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card border-0 shadow-sm stat-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1 small">الموظفون</h6>
+                                <h3 class="mb-0 fw-bold counter"><?php echo $total_employee_users; ?></h3>
+                                <p class="text-muted small mb-0">فريق العمل</p>
+                            </div>
+                            <div class="bg-primary-light rounded-circle p-3">
+                                <i class="fas fa-user-tie text-primary"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card border-0 shadow-sm stat-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1 small">العملاء</h6>
+                                <h3 class="mb-0 fw-bold counter"><?php echo $total_customer_users; ?></h3>
+                                <p class="text-muted small mb-0">المستخدمون المسجلون</p>
+                            </div>
+                            <div class="bg-secondary-light rounded-circle p-3">
+                                <i class="fas fa-user-tag text-secondary"></i>
                             </div>
                         </div>
                     </div>
@@ -301,7 +561,6 @@ if ($type === 'employee') {
                             <select name="role" class="form-select">
                                 <option value="">All Roles</option>
                                 <option value="<?php echo ROLE_ADMIN; ?>" <?php echo ($role === ROLE_ADMIN) ? 'selected' : ''; ?>>Administrator</option>
-                                <option value="<?php echo ROLE_MANAGER; ?>" <?php echo ($role === ROLE_MANAGER) ? 'selected' : ''; ?>>Manager</option>
                                 <option value="<?php echo ROLE_EMPLOYEE; ?>" <?php echo ($role === ROLE_EMPLOYEE) ? 'selected' : ''; ?>>Employee</option>
                                 <option value="<?php echo ROLE_CUSTOMER; ?>" <?php echo ($role === ROLE_CUSTOMER) ? 'selected' : ''; ?>>Customer</option>
                             </select>
@@ -388,9 +647,6 @@ if ($type === 'employee') {
                                         switch ($user['role']) {
                                             case ROLE_ADMIN:
                                                 echo '<span class="badge rounded-pill bg-primary">Administrator</span>';
-                                                break;
-                                            case ROLE_MANAGER:
-                                                echo '<span class="badge rounded-pill bg-info">Manager</span>';
                                                 break;
                                             case ROLE_EMPLOYEE:
                                                 echo '<span class="badge rounded-pill bg-success">Employee</span>';

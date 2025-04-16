@@ -201,7 +201,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <select class="form-select" id="role" name="role" required>
                                     <option value="">Select Role</option>
                                     <option value="<?php echo ROLE_ADMIN; ?>" <?php echo (isset($role) && $role === ROLE_ADMIN) ? 'selected' : ''; ?>>Admin</option>
-                                    <option value="<?php echo ROLE_MANAGER; ?>" <?php echo (isset($role) && $role === ROLE_MANAGER) ? 'selected' : ''; ?>>Manager</option>
                                     <option value="<?php echo ROLE_EMPLOYEE; ?>" <?php echo (isset($role) && $role === ROLE_EMPLOYEE) ? 'selected' : ''; ?>>Employee</option>
                                     <option value="<?php echo ROLE_CUSTOMER; ?>" <?php echo (isset($role) && $role === ROLE_CUSTOMER) ? 'selected' : ''; ?>>Customer</option>
                                 </select>

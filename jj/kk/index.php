@@ -5,6 +5,7 @@ session_start();
 // Include configuration and helper files
 require_once 'config/config.php';
 require_once 'includes/functions.php';
+require_once 'includes/database.php';
 
 // Redirect to login page if user is not logged in
 if (!isset($_SESSION['user_id']) && basename($_SERVER['PHP_SELF']) !== 'login.php') {

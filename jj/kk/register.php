@@ -125,24 +125,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Auto Care Garage</title>
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <!-- Google Fonts - Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="assets/css/style.css" rel="stylesheet">
+    <link href="assets/css/register.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<body>
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white text-center py-3">
+                    <div class="card-header text-white text-center py-3">
                         <h2 class="mb-0">Create an Account</h2>
                     </div>
                     <div class="card-body p-4">
                         <?php if (!empty($errors)): ?>
                         <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
                             <ul class="mb-0">
                                 <?php foreach ($errors as $error): ?>
                                 <li><?php echo $error; ?></li>
@@ -151,73 +157,167 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <?php endif; ?>
                         
-                        <form method="post" action="">
-                            <div class="row mb-3">
-                                <div class="col-md-6 mb-3 mb-md-0">
-                                    <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="first_name" name="first_name" value="<?php echo isset($first_name) ? $first_name : ''; ?>" required>
+                        <!-- Progress bar -->
+                        <div class="progress-container">
+                            <div class="step-indicator">
+                                <div class="step active">Personal Info</div>
+                                <div class="step">Account Setup</div>
+                                <div class="step">Address Details</div>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: 33%"></div>
+                            </div>
+                        </div>
+                        
+                        <form method="post" action="" id="registrationForm">
+                            <!-- Section 1: Personal Information -->
+                            <div class="form-section active">
+                                <h4 class="mb-4">Personal Information</h4>
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <label for="first_name" class="form-label">First Name <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0">
+                                                <i class="fas fa-user text-muted"></i>
+                                            </span>
+                                            <input type="text" class="form-control border-start-0" id="first_name" name="first_name" value="<?php echo isset($first_name) ? $first_name : ''; ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0">
+                                                <i class="fas fa-user text-muted"></i>
+                                            </span>
+                                            <input type="text" class="form-control border-start-0" id="last_name" name="last_name" value="<?php echo isset($last_name) ? $last_name : ''; ?>" required>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="last_name" class="form-label">Last Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="last_name" name="last_name" value="<?php echo isset($last_name) ? $last_name : ''; ?>" required>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0">
+                                                <i class="fas fa-envelope text-muted"></i>
+                                            </span>
+                                            <input type="email" class="form-control border-start-0" id="email" name="email" value="<?php echo isset($email) ? $email : ''; ?>" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="phone" class="form-label">Phone <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0">
+                                                <i class="fas fa-phone text-muted"></i>
+                                            </span>
+                                            <input type="tel" class="form-control border-start-0" id="phone" name="phone" value="<?php echo isset($phone) ? $phone : ''; ?>" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-navigation">
+                                    <button type="button" class="btn btn-primary btn-next">Next <i class="fas fa-arrow-right ms-2"></i></button>
                                 </div>
                             </div>
                             
-                            <div class="row mb-3">
-                                <div class="col-md-6 mb-3 mb-md-0">
-                                    <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                                    <input type="email" class="form-control" id="email" name="email" value="<?php echo isset($email) ? $email : ''; ?>" required>
+                            <!-- Section 2: Account Setup -->
+                            <div class="form-section">
+                                <h4 class="mb-4">Account Setup</h4>
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-3 mb-md-0">
+                                        <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0">
+                                                <i class="fas fa-lock text-muted"></i>
+                                            </span>
+                                            <input type="password" class="form-control border-start-0 border-end-0" id="password" name="password" required>
+                                            <span class="input-group-text bg-white border-start-0" style="cursor: pointer;">
+                                                <i class="fas fa-eye" id="togglePassword"></i>
+                                            </span>
+                                        </div>
+                                        <div class="password-strength" id="password-strength"></div>
+                                        <div class="form-text">Password must be at least 6 characters long</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="confirm_password" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0">
+                                                <i class="fas fa-lock text-muted"></i>
+                                            </span>
+                                            <input type="password" class="form-control border-start-0 border-end-0" id="confirm_password" name="confirm_password" required>
+                                            <span class="input-group-text bg-white border-start-0" style="cursor: pointer;">
+                                                <i class="fas fa-eye" id="toggleConfirmPassword"></i>
+                                            </span>
+                                        </div>
+                                        <div id="password-match-feedback"></div>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="phone" class="form-label">Phone <span class="text-danger">*</span></label>
-                                    <input type="tel" class="form-control" id="phone" name="phone" value="<?php echo isset($phone) ? $phone : ''; ?>" required>
-                                </div>
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6 mb-3 mb-md-0">
-                                    <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                                    <input type="password" class="form-control" id="password" name="password" required>
-                                    <div class="form-text">Password must be at least 6 characters long</div>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="confirm_password" class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                                </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label for="address" class="form-label">Address</label>
-                                <input type="text" class="form-control" id="address" name="address" value="<?php echo isset($address) ? $address : ''; ?>">
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-4 mb-3 mb-md-0">
-                                    <label for="city" class="form-label">City</label>
-                                    <input type="text" class="form-control" id="city" name="city" value="<?php echo isset($city) ? $city : ''; ?>">
-                                </div>
-                                <div class="col-md-4 mb-3 mb-md-0">
-                                    <label for="state" class="form-label">State</label>
-                                    <input type="text" class="form-control" id="state" name="state" value="<?php echo isset($state) ? $state : ''; ?>">
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="zip_code" class="form-label">ZIP Code</label>
-                                    <input type="text" class="form-control" id="zip_code" name="zip_code" value="<?php echo isset($zip_code) ? $zip_code : ''; ?>">
+                                
+                                <div class="form-navigation">
+                                    <button type="button" class="btn btn-outline-secondary btn-prev"><i class="fas fa-arrow-left me-2"></i> Previous</button>
+                                    <button type="button" class="btn btn-primary btn-next">Next <i class="fas fa-arrow-right ms-2"></i></button>
                                 </div>
                             </div>
                             
-                            <div class="mb-3 form-check">
-                                <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
-                                <label class="form-check-label" for="terms">I agree to the <a href="#">Terms and Conditions</a> and <a href="#">Privacy Policy</a></label>
-                            </div>
-                            
-                            <div class="d-grid gap-2">
-                                <button type="submit" class="btn btn-primary">Register</button>
+                            <!-- Section 3: Address Details -->
+                            <div class="form-section">
+                                <h4 class="mb-4">Address Details</h4>
+                                <div class="mb-3">
+                                    <label for="address" class="form-label">Address</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0">
+                                            <i class="fas fa-home text-muted"></i>
+                                        </span>
+                                        <input type="text" class="form-control border-start-0" id="address" name="address" value="<?php echo isset($address) ? $address : ''; ?>">
+                                    </div>
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-4 mb-3 mb-md-0">
+                                        <label for="city" class="form-label">City</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0">
+                                                <i class="fas fa-city text-muted"></i>
+                                            </span>
+                                            <input type="text" class="form-control border-start-0" id="city" name="city" value="<?php echo isset($city) ? $city : ''; ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4 mb-3 mb-md-0">
+                                        <label for="state" class="form-label">State</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0">
+                                                <i class="fas fa-map-marker-alt text-muted"></i>
+                                            </span>
+                                            <input type="text" class="form-control border-start-0" id="state" name="state" value="<?php echo isset($state) ? $state : ''; ?>">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="zip_code" class="form-label">ZIP Code</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white border-end-0">
+                                                <i class="fas fa-map-pin text-muted"></i>
+                                            </span>
+                                            <input type="text" class="form-control border-start-0" id="zip_code" name="zip_code" value="<?php echo isset($zip_code) ? $zip_code : ''; ?>">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+                                    <label class="form-check-label" for="terms">I agree to the <a href="#">Terms and Conditions</a> and <a href="#">Privacy Policy</a></label>
+                                </div>
+                                
+                                <div class="form-navigation">
+                                    <button type="button" class="btn btn-outline-secondary btn-prev"><i class="fas fa-arrow-left me-2"></i> Previous</button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-user-plus me-2"></i>Register
+                                    </button>
+                                </div>
                             </div>
                         </form>
                         
                         <div class="mt-4 text-center">
-                            <p>Already have an account? <a href="login.php">Login here</a></p>
+                            <p>Already have an account? <a href="login.php"><i class="fas fa-sign-in-alt me-1"></i>Login here</a></p>
                         </div>
                     </div>
                 </div>
@@ -233,5 +333,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="assets/js/register.js"></script>
 </body>
 </html>

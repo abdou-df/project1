@@ -243,39 +243,12 @@ function isAdmin() {
 }
 
 /**
- * Check if current user is a manager
+ * Check if current user is an employee
  * 
- * @return bool True if user is manager
+ * @return bool True if user is employee
  */
-function isManager() {
-    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'manager';
-}
-
-/**
- * Check if current user is a mechanic
- * 
- * @return bool True if user is mechanic
- */
-function isMechanic() {
-    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'mechanic';
-}
-
-/**
- * Check if current user is a receptionist
- * 
- * @return bool True if user is receptionist
- */
-function isReceptionist() {
-    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'receptionist';
-}
-
-/**
- * Check if current user is an inventory manager
- * 
- * @return bool True if user is inventory manager
- */
-function isInventoryManager() {
-    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'inventory_manager';
+function isEmployee() {
+    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'employee';
 }
 
 /**
@@ -293,51 +266,30 @@ function isCustomer() {
  * @param string $permission Permission key
  * @return bool True if user has permission
  */
-function hasPermission($permission) {
-    // Make sure user is logged in
-    if (!isLoggedIn()) {
-        return false;
+if (!function_exists('hasPermission')) {
+    function hasPermission($permission) {
+        // For a basic implementation, we map roles to permissions
+        // In a more advanced system, you'd check a permission table
+        if (!isset($_SESSION['user_role'])) {
+            return false;
+        }
+        
+        // Simple role-based permissions (adjust to your needs)
+        $rolePermissions = [
+            'admin' => ['all'], // Admin has all permissions
+            'employee' => ['view_dashboard', 'manage_customers', 'manage_appointments', 'manage_services', 'manage_inventory', 'create_appointments']
+        ];
+        
+        $userRole = $_SESSION['user_role'];
+        
+        // Admin has all permissions
+        if ($userRole === 'admin' || (isset($rolePermissions[$userRole]) && in_array('all', $rolePermissions[$userRole]))) {
+            return true;
+        }
+        
+        // Check if the user's role has the specific permission
+        return isset($rolePermissions[$userRole]) && in_array($permission, $rolePermissions[$userRole]);
     }
-    
-    // Get user role
-    $role = $_SESSION['user_role'];
-    
-    // Define permissions for each role
-    $permissions = [
-        'admin' => [
-            'view_dashboard', 'manage_users', 'manage_customers', 'manage_vehicles',
-            'manage_appointments', 'manage_services', 'manage_inventory',
-            'manage_invoices', 'view_reports', 'system_settings'
-        ],
-        'manager' => [
-            'view_dashboard', 'view_users', 'manage_customers', 'manage_vehicles',
-            'manage_appointments', 'manage_services', 'view_inventory',
-            'manage_invoices', 'view_reports'
-        ],
-        'mechanic' => [
-            'view_dashboard', 'view_customers', 'view_vehicles', 'update_appointments',
-            'view_services', 'view_inventory', 'view_invoices'
-        ],
-        'receptionist' => [
-            'view_dashboard', 'view_customers', 'view_vehicles', 'manage_appointments',
-            'view_services', 'view_invoices'
-        ],
-        'inventory_manager' => [
-            'view_dashboard', 'manage_inventory', 'view_invoices'
-        ],
-        'customer' => [
-            'view_dashboard', 'view_own_vehicles', 'view_own_appointments',
-            'view_own_invoices'
-        ]
-    ];
-    
-    // Check if role exists in permissions array
-    if (!isset($permissions[$role])) {
-        return false;
-    }
-    
-    // Check if permission exists for the role
-    return in_array($permission, $permissions[$role]);
 }
 
 /**
@@ -355,22 +307,19 @@ function getCurrentUserId() {
  * @return array|null User data or null if not logged in
  */
 function getCurrentUser() {
-    $user_id = getCurrentUserId();
-    
-    if (!$user_id) {
-        return null;
+    if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+        global $pdo;
+        
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+            $stmt->execute([$_SESSION['user_id']]);
+            return $stmt->fetch();
+        } catch (Exception $e) {
+            return null;
+        }
     }
     
-    // Get user data from database
-    $user = getUserById($user_id);
-    
-    // If user not found or inactive, log out
-    if (!$user || $user['status'] !== 'active') {
-        logoutUser();
-        return null;
-    }
-    
-    return $user;
+    return null;
 }
 
 /**
@@ -391,3 +340,63 @@ function getUserById($user_id) {
     
     return false;
 }
+
+/**
+ * Check if user is logged in, redirect to login page if not
+ * @return void
+ */
+function checkLogin() {
+    if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+        // User is not logged in, redirect to login page
+        header("Location: ../login.php?redirect=" . urlencode($_SERVER['REQUEST_URI']));
+        exit;
+    }
+    
+    // Optionally check if the user account is still active in the database
+    // This is important if the account might have been disabled after login
+    // checkUserActive($_SESSION['user_id']);
+}
+
+/**
+ * Check if user has specific role
+ * @param string|array $roles Role or array of roles to check against
+ * @return boolean True if user has at least one of the specified roles
+ */
+if (!function_exists('hasRole')) {
+    function hasRole($roles) {
+        if (!isset($_SESSION['user_role'])) {
+            return false;
+        }
+        
+        if (is_array($roles)) {
+            return in_array($_SESSION['user_role'], $roles);
+        } else {
+            return $_SESSION['user_role'] === $roles;
+        }
+    }
+}
+
+/**
+ * Check if user's account is still active
+ * @param int $userId User ID to check
+ * @return void
+ */
+function checkUserActive($userId) {
+    global $pdo;
+    
+    try {
+        $stmt = $pdo->prepare("SELECT status FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $user = $stmt->fetch();
+        
+        if (!$user || $user['status'] !== 'active') {
+            // User account is inactive or doesn't exist anymore
+            logoutUser();
+            header("Location: ../login.php?error=inactive_account");
+            exit;
+        }
+    } catch (Exception $e) {
+        // On database error, do nothing (let the user continue)
+    }
+}
+?>

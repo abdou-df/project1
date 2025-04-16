@@ -38,8 +38,7 @@
                     <button class="btn-collapse ms-2" type="button" 
                             data-bs-toggle="collapse" 
                             data-bs-target="#usersSubmenu" 
-                            aria-expanded="<?php echo (in_array($page, ['users', 'employees', 'customers'])) ? 'true' : 'false'; ?>"
-                            onclick="event.stopPropagation();">
+                            aria-expanded="<?php echo (in_array($page, ['users', 'employees', 'customers'])) ? 'true' : 'false'; ?>">
                         <i class="fa-solid fa-chevron-down"></i>
                     </button>
                 </a>
@@ -59,33 +58,10 @@
             </li>
             
             <li>
-                <a href="#" class="nav-link d-flex align-items-center justify-content-between <?php echo (in_array($page, ['vehicles', 'vehicle-details'])) ? 'active' : ''; ?>" 
-                   onclick="window.location.href='index.php?page=vehicles'; return false;">
-                    <div>
-                        <i class="fa-solid fa-car"></i>
-                        <span class="nav-text">Vehicles</span>
-                    </div>
-                    <button class="btn-collapse ms-2" type="button" 
-                            data-bs-toggle="collapse" 
-                            data-bs-target="#vehiclesSubmenu" 
-                            aria-expanded="<?php echo (in_array($page, ['vehicles', 'vehicle-details'])) ? 'true' : 'false'; ?>"
-                            onclick="event.stopPropagation();">
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </button>
+                <a href="index.php?page=vehicles" class="nav-link <?php echo (in_array($page, ['vehicles', 'vehicle-details'])) ? 'active' : ''; ?>">
+                    <i class="fa-solid fa-car"></i>
+                    <span class="nav-text">Vehicles</span>
                 </a>
-                <div class="collapse <?php echo (in_array($page, ['vehicles', 'vehicle-details'])) ? 'show' : ''; ?>" id="vehiclesSubmenu">
-                    <ul class="nav-submenu">
-                        <li>
-                            <a class="submenu-item" href="index.php?page=vehicles"><i class="fa-solid fa-circle fa-xs me-2"></i><span>All Vehicles</span></a>
-                        </li>
-                        <li>
-                            <a class="submenu-item" href="index.php?page=vehicles&type=car"><i class="fa-solid fa-circle fa-xs me-2"></i><span>Cars</span></a>
-                        </li>
-                        <li>
-                            <a class="submenu-item" href="index.php?page=vehicles&type=bike"><i class="fa-solid fa-circle fa-xs me-2"></i><span>Bikes</span></a>
-                        </li>
-                    </ul>
-                </div>
             </li>
             
             <li>
@@ -116,27 +92,9 @@
                         <i class="fa-solid fa-clipboard-list"></i>
                         <span class="nav-text">Job Card</span>
                     </div>
-                    <button class="btn-collapse ms-2" type="button" 
-                            data-bs-toggle="collapse" 
-                            data-bs-target="#jobCardSubmenu" 
-                            aria-expanded="<?php echo (in_array($page, ['job-card'])) ? 'true' : 'false'; ?>"
-                            onclick="event.stopPropagation();">
-                        <i class="fa-solid fa-chevron-down"></i>
-                    </button>
                 </a>
                 <div class="collapse <?php echo (in_array($page, ['job-card'])) ? 'show' : ''; ?>" id="jobCardSubmenu">
-                    <ul class="nav-submenu">
-                        <li>
-                            <a class="submenu-item" href="index.php?page=job-card"><i class="fa-solid fa-circle fa-xs me-2"></i><span>All Job Cards</span></a>
-                        </li>
-                        <li>
-                            <a class="submenu-item" href="index.php?page=job-card&status=pending"><i class="fa-solid fa-circle fa-xs me-2"></i><span>Pending</span></a>
-                        </li>
-                        <li>
-                            <a class="submenu-item" href="index.php?page=job-card&status=completed"><i class="fa-solid fa-circle fa-xs me-2"></i><span>Completed</span></a>
-                        </li>
-                    </ul>
-                </div>
+             
             </li>
             
             <li>
@@ -149,8 +107,7 @@
                     <button class="btn-collapse ms-2" type="button" 
                             data-bs-toggle="collapse" 
                             data-bs-target="#accountsSubmenu" 
-                            aria-expanded="<?php echo (in_array($page, ['accounts'])) ? 'true' : 'false'; ?>"
-                            onclick="event.stopPropagation();">
+                            aria-expanded="<?php echo (in_array($page, ['accounts'])) ? 'true' : 'false'; ?>">
                         <i class="fa-solid fa-chevron-down"></i>
                     </button>
                 </a>
@@ -179,8 +136,7 @@
                     <button class="btn-collapse ms-2" type="button" 
                             data-bs-toggle="collapse" 
                             data-bs-target="#salesSubmenu" 
-                            aria-expanded="<?php echo (in_array($page, ['sales'])) ? 'true' : 'false'; ?>"
-                            onclick="event.stopPropagation();">
+                            aria-expanded="<?php echo (in_array($page, ['sales'])) ? 'true' : 'false'; ?>">
                         <i class="fa-solid fa-chevron-down"></i>
                     </button>
                 </a>
@@ -203,12 +159,7 @@
                 </a>
             </li>
             
-            <li>
-                <a href="index.php?page=reports" class="nav-link <?php echo ($page == 'reports') ? 'active' : ''; ?>">
-                    <i class="fa-solid fa-chart-column"></i>
-                    <span class="nav-text">Reports</span>
-                </a>
-            </li>
+           
             
             <li>
                 <a href="index.php?page=email-templates" class="nav-link <?php echo ($page == 'email-templates') ? 'active' : ''; ?>">

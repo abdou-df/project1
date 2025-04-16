@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Handle sidebar collapse buttons
+    /* Commenting out potentially conflicting sidebar code
     const collapseButtons = document.querySelectorAll('.collapse-btn');
     collapseButtons.forEach(button => {
         button.addEventListener('click', function(e) {
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    */
     
     // Toggle sidebar
     const sidebarToggle = document.querySelector('.sidebar-toggle');
@@ -81,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    /* Commenting out more potentially conflicting sidebar code
     // Handle submenu toggle in horizontal menu
     const submenuToggles = document.querySelectorAll('.submenu-toggle');
     submenuToggles.forEach(toggle => {
@@ -116,7 +119,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    */
     
+    /* Commenting out potentially conflicting sidebar activation logic
     // Setup submenus based on active page
     const currentPage = document.location.href.split('page=')[1]?.split('&')[0] || 'dashboard';
     
@@ -148,6 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    */
     
     // Initialize datepicker
     const datepickers = document.querySelectorAll('.datepicker');

@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
             link.classList.add('active');
             console.log('Set active class for', linkPage);
             
+            /* Commenting out manual parent collapse expansion
             // If this is a child menu item, ensure parent is expanded
             const parentCollapse = link.closest('.collapse');
             if (parentCollapse) {
@@ -36,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             }
+            */
         }
     });
     

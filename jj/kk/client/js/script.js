@@ -1,154 +1,201 @@
 /**
  * Auto Care Garage - Main JavaScript
+ * Enhanced with modern features and animations
  */
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Mobile menu toggle
-  const mobileMenuToggle = document.querySelector(".mobile-menu-toggle")
-  const mobileMenu = document.querySelector(".mobile-menu")
+  // Initialize header scroll effect
+  initHeaderScroll()
 
-  if (mobileMenuToggle && mobileMenu) {
-    mobileMenuToggle.addEventListener("click", () => {
-      mobileMenu.classList.toggle("active")
-      mobileMenuToggle.querySelector("i").classList.toggle("fa-bars")
-      mobileMenuToggle.querySelector("i").classList.toggle("fa-times")
-    })
-  }
+  // Initialize mobile menu
+  initMobileMenu()
 
-  // Testimonials slider
-  const testimonialsSlider = document.querySelector(".testimonials-slider")
-  if (testimonialsSlider) {
-    let isDown = false
-    let startX
-    let scrollLeft
+  // Initialize testimonials slider
+  initTestimonialsSlider()
 
-    testimonialsSlider.addEventListener("mousedown", (e) => {
-      isDown = true
-      testimonialsSlider.classList.add("active")
-      startX = e.pageX - testimonialsSlider.offsetLeft
-      scrollLeft = testimonialsSlider.scrollLeft
-    })
+  // Initialize service card animations
+  initServiceCards()
 
-    testimonialsSlider.addEventListener("mouseleave", () => {
-      isDown = false
-      testimonialsSlider.classList.remove("active")
-    })
+  // Initialize AOS animations
+  initAOS()
 
-    testimonialsSlider.addEventListener("mouseup", () => {
-      isDown = false
-      testimonialsSlider.classList.remove("active")
-    })
-
-    testimonialsSlider.addEventListener("mousemove", (e) => {
-      if (!isDown) return
-      e.preventDefault()
-      const x = e.pageX - testimonialsSlider.offsetLeft
-      const walk = (x - startX) * 2
-      testimonialsSlider.scrollLeft = scrollLeft - walk
-    })
-  }
-
-  // Password toggle
-  const passwordToggles = document.querySelectorAll(".password-toggle")
-
-  if (passwordToggles.length > 0) {
-    passwordToggles.forEach((toggle) => {
-      toggle.addEventListener("click", function () {
-        const passwordInput = this.previousElementSibling
-        const type = passwordInput.getAttribute("type") === "password" ? "text" : "password"
-        passwordInput.setAttribute("type", type)
-        this.querySelector("i").classList.toggle("fa-eye")
-        this.querySelector("i").classList.toggle("fa-eye-slash")
-      })
-    })
-  }
-
-  // Form validation
-  const forms = document.querySelectorAll("form")
-
-  if (forms.length > 0) {
-    forms.forEach((form) => {
-      form.addEventListener("submit", (e) => {
-        let valid = true
-        const requiredInputs = form.querySelectorAll("[required]")
-
-        requiredInputs.forEach((input) => {
-          if (!input.value.trim()) {
-            valid = false
-            input.classList.add("error")
-
-            // Create error message if it doesn't exist
-            let errorMessage = input.nextElementSibling
-            if (!errorMessage || !errorMessage.classList.contains("error-message")) {
-              errorMessage = document.createElement("div")
-              errorMessage.classList.add("error-message")
-              errorMessage.textContent = "This field is required"
-              input.parentNode.insertBefore(errorMessage, input.nextSibling)
-            }
-          } else {
-            input.classList.remove("error")
-
-            // Remove error message if it exists
-            const errorMessage = input.nextElementSibling
-            if (errorMessage && errorMessage.classList.contains("error-message")) {
-              errorMessage.remove()
-            }
-          }
-        })
-
-        if (!valid) {
-          e.preventDefault()
-        }
-      })
-    })
-  }
-
-  // Alerts auto-close
-  const alerts = document.querySelectorAll(".alert")
-
-  if (alerts.length > 0) {
-    alerts.forEach((alert) => {
-      setTimeout(() => {
-        alert.style.opacity = "0"
-        setTimeout(() => {
-          alert.remove()
-        }, 500)
-      }, 5000)
-    })
-  }
-
-  // Smooth scroll for anchor links
-  const anchorLinks = document.querySelectorAll('a[href^="#"]:not([href="#"])')
-
-  if (anchorLinks.length > 0) {
-    anchorLinks.forEach((link) => {
-      link.addEventListener("click", function (e) {
-        e.preventDefault()
-
-        const targetId = this.getAttribute("href")
-        const targetElement = document.querySelector(targetId)
-
-        if (targetElement) {
-          window.scrollTo({
-            top: targetElement.offsetTop - 100,
-            behavior: "smooth",
-          })
-        }
-      })
-    })
-  }
-
-  // Date picker min date (today)
-  const dateInputs = document.querySelectorAll('input[type="date"]')
-
-  if (dateInputs.length > 0) {
-    const today = new Date().toISOString().split("T")[0]
-
-    dateInputs.forEach((input) => {
-      if (!input.min) {
-        input.min = today
-      }
-    })
-  }
+  // Initialize typed.js for hero section
+  initTypedJS()
 })
 
+/**
+ * Header scroll effect
+ */
+function initHeaderScroll() {
+  const header = document.querySelector(".header")
+
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 50) {
+      header.classList.add("scrolled")
+    } else {
+      header.classList.remove("scrolled")
+    }
+  })
+}
+
+/**
+ * Mobile menu functionality
+ */
+function initMobileMenu() {
+  const menuToggle = document.querySelector(".mobile-menu-toggle")
+  const mobileMenu = document.querySelector(".mobile-menu")
+
+  if (menuToggle && mobileMenu) {
+    menuToggle.addEventListener("click", () => {
+      mobileMenu.classList.toggle("active")
+      document.body.classList.toggle("menu-open")
+    })
+  }
+}
+
+/**
+ * Testimonials slider with auto-scroll
+ */
+function initTestimonialsSlider() {
+  const slider = document.querySelector(".testimonials-slider")
+
+  if (!slider) return
+
+  // Auto scroll functionality
+  let scrollAmount = 0
+  const testimonialWidth = 380 // Width of testimonial + gap
+  const maxScroll = slider.scrollWidth - slider.clientWidth
+
+  // Manual scroll with mouse wheel
+  slider.addEventListener("wheel", (e) => {
+    e.preventDefault()
+    slider.scrollLeft += e.deltaY
+  })
+
+  // Auto scroll interval
+  setInterval(() => {
+    scrollAmount += 1
+    if (scrollAmount >= maxScroll) {
+      scrollAmount = 0
+      slider.scrollTo({ left: 0, behavior: "smooth" })
+    } else {
+      slider.scrollTo({ left: scrollAmount, behavior: "smooth" })
+    }
+  }, 50)
+}
+
+/**
+ * Service card animations
+ */
+function initServiceCards() {
+  const serviceCards = document.querySelectorAll(".service-card")
+
+  serviceCards.forEach((card) => {
+    card.addEventListener("mouseenter", function () {
+      this.style.transform = "translateY(-10px)"
+      this.style.boxShadow = "var(--box-shadow-lg)"
+    })
+
+    card.addEventListener("mouseleave", function () {
+      this.style.transform = "translateY(0)"
+      this.style.boxShadow = "var(--box-shadow)"
+    })
+  })
+}
+
+/**
+ * Initialize AOS (Animate On Scroll)
+ */
+function initAOS() {
+  // Check if AOS is loaded
+  if (typeof AOS !== "undefined") {
+    AOS.init({
+      duration: 800,
+      easing: "ease-in-out",
+      once: true,
+      offset: 100,
+    })
+  }
+}
+
+/**
+ * Initialize Typed.js for dynamic text animation
+ */
+function initTypedJS() {
+  // Check if element exists and if Typed is loaded
+  const heroSubtitle = document.querySelector(".hero-subtitle")
+
+  if (heroSubtitle && typeof Typed !== "undefined") {
+    new Typed(heroSubtitle, {
+      strings: [
+        "Trust your vehicle with our expert mechanics",
+        "Quality auto repair services at affordable prices",
+        "Experienced technicians for all vehicle makes and models",
+      ],
+      typeSpeed: 50,
+      backSpeed: 30,
+      backDelay: 2000,
+      loop: true,
+    })
+  }
+}
+
+/**
+ * Smooth scroll to sections
+ */
+document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+  anchor.addEventListener("click", function (e) {
+    e.preventDefault()
+
+    const target = document.querySelector(this.getAttribute("href"))
+    if (target) {
+      target.scrollIntoView({
+        behavior: "smooth",
+      })
+    }
+  })
+})
+
+/**
+ * Add counter animation to statistics
+ */
+function animateCounter(el) {
+  const target = Number.parseInt(el.getAttribute("data-count"))
+  const duration = 2000
+  const step = (target / duration) * 10
+  let current = 0
+
+  const timer = setInterval(() => {
+    current += step
+    el.textContent = Math.round(current)
+
+    if (current >= target) {
+      el.textContent = target
+      clearInterval(timer)
+    }
+  }, 10)
+}
+
+// Animate counters when they come into view
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const counters = entry.target.querySelectorAll(".counter")
+        counters.forEach((counter) => {
+          animateCounter(counter)
+        })
+        observer.unobserve(entry.target)
+      }
+    })
+  },
+  {
+    threshold: 0.5,
+  },
+)
+
+// Observe stats section if it exists
+const statsSection = document.querySelector(".stats-section")
+if (statsSection) {
+  observer.observe(statsSection)
+}

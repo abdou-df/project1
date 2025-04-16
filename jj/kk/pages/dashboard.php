@@ -11,7 +11,7 @@ if (!$db) {
 // Check if database exists
 $dbCheckQuery = "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '" . DB_NAME . "'";
 $dbResult = $db->query($dbCheckQuery);
-if (!$dbResult || $dbResult->num_rows === 0) {
+if (!$dbResult || $dbResult->rowCount() === 0) {
     die("قاعدة البيانات '" . DB_NAME . "' غير موجودة");
 }
 
@@ -36,9 +36,9 @@ $tablesForSimpleStats = [
 
 foreach ($tablesForSimpleStats as $key => $table) {
     $tableExists = $db->query("SHOW TABLES LIKE '$table'");
-    if ($tableExists && $tableExists->num_rows > 0) {
+    if ($tableExists && $tableExists->rowCount() > 0) {
         $countResult = $db->query("SELECT COUNT(*) as count FROM $table");
-        $count = $countResult ? $countResult->fetch_assoc()['count'] : 0;
+        $count = $countResult ? $countResult->fetchColumn() : 0;
         $simpleStats[$key] = (int)$count;
         error_log("SimpleStats: Fetched $key ($table) count: $count"); // Keep logging
     } else {
@@ -139,14 +139,14 @@ try {
         // --- Using direct query for consistency and because dbQuery might be unreliable ---
         $recentCustomersResult = $db->query($recentCustomersSql);
         if ($recentCustomersResult) {
-            while ($row = $recentCustomersResult->fetch_assoc()) {
+            while ($row = $recentCustomersResult->fetch(PDO::FETCH_ASSOC)) {
                 $recentCustomers[] = $row;
             }
-            $recentCustomersResult->free();
+            $recentCustomersResult->closeCursor();
             error_log("Fetched " . count($recentCustomers) . " recent customers using direct query.");
         } else {
              // Remove direct error output, rely on error_log
-             error_log("Error fetching recent customers using direct query: (" . $db->errno . ") " . $db->error . " | SQL: $recentCustomersSql");
+             error_log("Error fetching recent customers using direct query: (" . $db->errorCode() . ") " . implode(" | ", $db->errorInfo()) . " | SQL: $recentCustomersSql");
              $recentCustomers = []; // Reset to empty on error
         }
         /* // Comment out potentially problematic dbQuery call
@@ -166,7 +166,7 @@ try {
 
     // Get upcoming appointments (e.g., next 5 starting from today)
     $appointmentsTableExists = $db->query("SHOW TABLES LIKE 'appointments'"); // Correct table name
-    if ($appointmentsTableExists && $appointmentsTableExists->num_rows > 0) {
+    if ($appointmentsTableExists && $appointmentsTableExists->rowCount() > 0) {
         // --- Restore Original Query Logic --- 
         // Fetch upcoming appointments (date >= today)
         $upcomingAppointmentsSql = "SELECT id, customer_id, service_id, date, start_time, notes
@@ -179,14 +179,14 @@ try {
         $result = $db->query($upcomingAppointmentsSql);
 
         if ($result) {
-            while ($row = $result->fetch_assoc()) {
+            while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
                 $upcomingAppointments[] = $row;
             }
-            $result->free(); // Free the result set
+            $result->closeCursor(); // Free the result set
             error_log("Fetched " . count($upcomingAppointments) . " upcoming appointments using direct query from 'appointments' table.");
         } else {
             // Remove direct error output, rely on error_log
-            error_log("Error executing upcoming appointments query: (" . $db->errno . ") " . $db->error . " | SQL: $upcomingAppointmentsSql");
+            error_log("Error executing upcoming appointments query: (" . $db->errorCode() . ") " . implode(" | ", $db->errorInfo()) . " | SQL: $upcomingAppointmentsSql");
             $upcomingAppointments = []; // Ensure it's an empty array on error
         }
     } else {
@@ -201,26 +201,25 @@ try {
     $eventDates = []; // Array to hold dates with events
 
     $calendarTableExists = $db->query("SHOW TABLES LIKE 'appointments'");
-    if ($calendarTableExists && $calendarTableExists->num_rows > 0) {
+    if ($calendarTableExists && $calendarTableExists->rowCount() > 0) {
         $calendarSql = "SELECT DISTINCT DATE(date) as event_day 
                         FROM appointments 
-                        WHERE YEAR(date) = ? AND MONTH(date) = ?";
+                        WHERE YEAR(date) = :year AND MONTH(date) = :month";
         $stmt = $db->prepare($calendarSql);
         if($stmt) {
-            $stmt->bind_param("ss", $currentYear, $currentMonth);
+            $stmt->bindParam(':year', $currentYear);
+            $stmt->bindParam(':month', $currentMonth);
             if ($stmt->execute()) {
-                $result = $stmt->get_result();
-                while ($row = $result->fetch_assoc()) {
+                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
                     $eventDates[] = $row['event_day'];
                 }
-                $result->free();
                 error_log("Fetched " . count($eventDates) . " unique event dates for calendar month $currentYear-$currentMonth.");
             } else {
-                 error_log("Error executing calendar events query: (" . $stmt->errno . ") " . $stmt->error);
+                 error_log("Error executing calendar events query: (" . $stmt->errorCode() . ") " . implode(" | ", $stmt->errorInfo()));
             }
-            $stmt->close();
+            $stmt->closeCursor();
         } else {
-             error_log("Error preparing calendar events query: (" . $db->errno . ") " . $db->error);
+             error_log("Error preparing calendar events query: (" . $db->errorCode() . ") " . implode(" | ", $db->errorInfo()));
         }
     }
 
@@ -230,7 +229,7 @@ try {
     // --- Fetch Inventory Alerts (Low Stock Items) ---
     $lowStockItems = [];
     $inventoryTableExists = $db->query("SHOW TABLES LIKE 'inventory'");
-    if ($inventoryTableExists && $inventoryTableExists->num_rows > 0) {
+    if ($inventoryTableExists && $inventoryTableExists->rowCount() > 0) {
         $lowStockSql = "SELECT id, name, quantity, reorder_level 
                         FROM inventory 
                         WHERE quantity <= reorder_level 
@@ -238,13 +237,13 @@ try {
                         LIMIT 5"; // Limit to show top 5 low stock items
         $lowStockResult = $db->query($lowStockSql);
         if ($lowStockResult) {
-            while($row = $lowStockResult->fetch_assoc()) {
+            while($row = $lowStockResult->fetch(PDO::FETCH_ASSOC)) {
                 $lowStockItems[] = $row;
             }
-            $lowStockResult->free();
+            $lowStockResult->closeCursor();
             error_log("Fetched " . count($lowStockItems) . " low stock items.");
         } else {
-            error_log("Error executing low stock items query: (" . $db->errno . ") " . $db->error . " | SQL: $lowStockSql");
+            error_log("Error executing low stock items query: (" . $db->errorCode() . ") " . implode(" | ", $db->errorInfo()) . " | SQL: $lowStockSql");
         }
     } else {
         error_log("Table 'inventory' does not exist. Cannot fetch low stock items.");
@@ -253,20 +252,20 @@ try {
 
     // --- Fetch Appointment Status Counts ---
     $appointmentStatusCounts = ['in_progress' => 0, 'confirmed_today' => 0];
-    if ($appointmentsTableExists && $appointmentsTableExists->num_rows > 0) { // Use check from earlier
+    if ($appointmentsTableExists && $appointmentsTableExists->rowCount() > 0) { // Use check from earlier
         $statusSql = "SELECT 
                         SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress_count,
                         SUM(CASE WHEN status = 'confirmed' AND date = CURDATE() THEN 1 ELSE 0 END) as confirmed_today_count
                       FROM appointments";
         $statusResult = $db->query($statusSql);
         if ($statusResult) {
-            $counts = $statusResult->fetch_assoc();
+            $counts = $statusResult->fetch(PDO::FETCH_ASSOC);
             $appointmentStatusCounts['in_progress'] = (int)($counts['in_progress_count'] ?? 0);
             $appointmentStatusCounts['confirmed_today'] = (int)($counts['confirmed_today_count'] ?? 0);
-            $statusResult->free();
+            $statusResult->closeCursor();
              error_log("Fetched appointment status counts - In Progress: {$appointmentStatusCounts['in_progress']}, Confirmed Today: {$appointmentStatusCounts['confirmed_today']}");
         } else {
-             error_log("Error executing appointment status count query: (" . $db->errno . ") " . $db->error . " | SQL: $statusSql");
+             error_log("Error executing appointment status count query: (" . $db->errorCode() . ") " . implode(" | ", $db->errorInfo()) . " | SQL: $statusSql");
         }
     }
     // --- End Fetch Appointment Status Counts ---
@@ -318,8 +317,8 @@ if (class_exists('IntlDateFormatter')) {
     <!-- Bootstrap RTL -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/dashboard.css">
+    <link rel="stylesheet" href="assets/css/style.css"> 
+   <link rel="stylesheet" href="assets/css/dashboard.css">
     <link rel="stylesheet" href="assets/css/sidebar.css">
     <style>
         /* Add styles for the donut chart segments if not already in dashboard.css */

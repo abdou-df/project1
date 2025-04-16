@@ -17,9 +17,9 @@ function is_admin() {
     return isset($_SESSION['user_role']) && $_SESSION['user_role'] == 'admin';
 }
 
-// Function to check if user is staff (admin, manager, mechanic, receptionist)
+// Function to check if user is staff (admin or employee)
 function is_staff() {
-    return isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'manager', 'mechanic', 'receptionist']);
+    return isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'employee']);
 }
 
 // Function to check if user is customer

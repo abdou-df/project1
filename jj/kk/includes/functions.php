@@ -3,6 +3,14 @@
  * Helper functions for the Garage Management System
  */
 
+// Define default currency symbol if not defined elsewhere (e.g., in config.php)
+if (!defined('DEFAULT_CURRENCY_SYMBOL')) {
+    define('DEFAULT_CURRENCY_SYMBOL', '$');
+}
+if (!defined('DATE_FORMAT')) {
+    define('DATE_FORMAT', 'Y-m-d'); // Example date format
+}
+
 /**
  * Sanitize user input
  * @param string $data - Input data to sanitize
@@ -16,20 +24,60 @@ function sanitize($data) {
 }
 
 /**
- * Redirect to a specific URL
+ * Redirect to a specific URL with optional message
  * @param string $url - URL to redirect to
+ * @param string $message - Optional message to display after redirect
+ * @param string $type - Message type (success, danger, warning, info)
  */
-function redirect($url) {
+function redirect($url, $message = '', $type = 'info') {
+    if (!empty($message)) {
+        $_SESSION['flash_message'] = [
+            'message' => $message,
+            'type' => $type
+        ];
+    }
     header("Location: $url");
     exit();
 }
 
-/*
+/**
  * Check if user is logged in
  * @return boolean
- 
-function isLoggedIn() {
+ */
+function is_logged_in() {
     return isset($_SESSION['user_id']);
+}
+
+/**
+ * Check if user is an admin
+ * @return boolean
+ */
+function is_admin() {
+    return (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin');
+}
+
+/**
+ * Check if user is a manager
+ * @return boolean
+ */
+function is_manager() {
+    return (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'manager');
+}
+
+/**
+ * Check if user is a mechanic
+ * @return boolean
+ */
+function is_mechanic() {
+    return (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'mechanic');
+}
+
+/**
+ * Check if user is a customer
+ * @return boolean
+ */
+function is_customer() {
+    return (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'customer');
 }
 
 /**
@@ -224,6 +272,22 @@ function getStatusBadge($status) {
     }
     
     return "<span class='badge {$badgeClass}'>{$status}</span>";
+}
+
+/**
+ * Get Bootstrap badge class for quotation status
+ * @param string $status - Quotation status
+ * @return string - CSS class name
+ */
+function get_quotation_status_badge_class($status) {
+    switch (strtolower($status ?? 'draft')) {
+        case 'sent': return 'info';
+        case 'accepted': return 'success';
+        case 'rejected': return 'danger';
+        case 'expired': return 'warning';
+        case 'draft':
+        default: return 'secondary';
+    }
 }
 
 /**

@@ -66,6 +66,7 @@ CREATE TABLE `vehicles` (
   `transmission` enum('automatic','manual') DEFAULT NULL,
   `fuel_type` enum('gasoline','diesel','electric','hybrid') DEFAULT NULL,
   `notes` text,
+  `status` enum('active','in_service','inactive') NOT NULL DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -234,6 +235,45 @@ CREATE TABLE `inventory_transactions` (
   CONSTRAINT `inventory_transactions_ibfk_1` FOREIGN KEY (`inventory_id`) REFERENCES `inventory` (`id`),
   CONSTRAINT `inventory_transactions_ibfk_2` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Quotations table
+CREATE TABLE `quotations` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `quotation_number` VARCHAR(50) UNIQUE NOT NULL,
+  `customer_id` INT NULL, -- Link to customers table
+  `vehicle_id` INT NULL, -- Optional: Link to vehicles table
+  `issue_date` DATE NOT NULL,
+  `valid_until` DATE NULL,
+  `subtotal` DECIMAL(10, 2) DEFAULT 0.00,
+  `tax_rate` DECIMAL(5, 2) DEFAULT 0.00,
+  `tax_amount` DECIMAL(10, 2) DEFAULT 0.00,
+  `discount_type` ENUM('percentage', 'fixed') NULL,
+  `discount_amount` DECIMAL(10, 2) DEFAULT 0.00,
+  `total_amount` DECIMAL(10, 2) DEFAULT 0.00,
+  `status` ENUM('draft', 'sent', 'accepted', 'rejected', 'expired') DEFAULT 'draft',
+  `notes` TEXT NULL,
+  `terms_conditions` TEXT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `created_by` INT NULL, -- Link to users table (employee who created it)
+  FOREIGN KEY (`customer_id`) REFERENCES `customers`(`id`) ON DELETE SET NULL,
+  FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles`(`id`) ON DELETE SET NULL,
+  FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Quotation items table
+CREATE TABLE `quotation_items` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `quotation_id` INT NOT NULL,
+  `item_type` ENUM('service', 'part') NOT NULL,
+  `item_id` INT NULL, -- Link to services or inventory table (depending on item_type)
+  `description` VARCHAR(255) NOT NULL,
+  `quantity` DECIMAL(10, 2) NOT NULL DEFAULT 1.00,
+  `unit_price` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  `total_price` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (`quotation_id`) REFERENCES `quotations`(`id`) ON DELETE CASCADE -- If a quote is deleted, its items are deleted too
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Settings table
 CREATE TABLE `settings` (

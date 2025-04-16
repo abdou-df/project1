@@ -1,5 +1,6 @@
 // Direct Sidebar Menu Implementation
 document.addEventListener('DOMContentLoaded', function() {
+    /* Commenting out manual collapse button click handler
     // Find all collapse buttons
     const collapseButtons = document.querySelectorAll('.btn-collapse');
     
@@ -27,7 +28,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    */
     
+    /* // Commenting out auto-open logic
     // Auto-open submenus based on current page
     const currentPage = window.location.href.split('page=')[1]?.split('&')[0] || 'dashboard';
     
@@ -70,4 +73,5 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+    */
 });

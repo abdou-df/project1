@@ -1,491 +1,519 @@
 <?php
-// Invoices page
+// Include required files
+require_once dirname(__FILE__) . '/../config/config.php';
+require_once dirname(__FILE__) . '/../includes/functions.php';
+require_once dirname(__FILE__) . '/../includes/auth.php';
 
-// In a real application, these would be fetched from the database
-// For demonstration, we'll use dummy data
-$invoices = [
-    [
-        'id' => 1,
-        'invoice_no' => 'INV-2023-001',
-        'customer' => 'Bendial Joseph',
-        'customer_id' => 1,
-        'date' => '2023-03-15',
-        'due_date' => '2023-04-15',
-        'amount' => 120.00,
-        'tax' => 12.00,
-        'total' => 132.00,
-        'status' => 'paid',
-        'payment_method' => 'Credit Card',
-        'payment_date' => '2023-03-20'
-    ],
-    [
-        'id' => 2,
-        'invoice_no' => 'INV-2023-002',
-        'customer' => 'Peter Parker',
-        'customer_id' => 2,
-        'date' => '2023-02-20',
-        'due_date' => '2023-03-20',
-        'amount' => 350.00,
-        'tax' => 35.00,
-        'total' => 385.00,
-        'status' => 'pending',
-        'payment_method' => '',
-        'payment_date' => ''
-    ],
-    [
-        'id' => 3,
-        'invoice_no' => 'INV-2023-003',
-        'customer' => 'Regina Cooper',
-        'customer_id' => 3,
-        'date' => '2023-01-10',
-        'due_date' => '2023-02-10',
-        'amount' => 80.00,
-        'tax' => 8.00,
-        'total' => 88.00,
-        'status' => 'paid',
-        'payment_method' => 'Bank Transfer',
-        'payment_date' => '2023-01-15'
-    ],
-    [
-        'id' => 4,
-        'invoice_no' => 'INV-2023-004',
-        'customer' => 'John Smith',
-        'customer_id' => 4,
-        'date' => '2023-03-05',
-        'due_date' => '2023-04-05',
-        'amount' => 200.00,
-        'tax' => 20.00,
-        'total' => 220.00,
-        'status' => 'overdue',
-        'payment_method' => '',
-        'payment_date' => ''
-    ],
-    [
-        'id' => 5,
-        'invoice_no' => 'INV-2023-005',
-        'customer' => 'Jane Doe',
-        'customer_id' => 5,
-        'date' => '2023-03-25',
-        'due_date' => '2023-04-25',
-        'amount' => 150.00,
-        'tax' => 15.00,
-        'total' => 165.00,
-        'status' => 'pending',
-        'payment_method' => '',
-        'payment_date' => ''
-    ]
-];
+// --- Database Connection --- START ---
+$host = DB_HOST; // Use constants from config.php
+$dbname = DB_NAME;
+$username = DB_USER;
+$password = DB_PASS;
 
-// Pagination
-$totalInvoices = count($invoices);
-$invoicesPerPage = 10;
-$currentPage = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-$startIndex = ($currentPage - 1) * $invoicesPerPage;
-$paginatedInvoices = array_slice($invoices, $startIndex, $invoicesPerPage);
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC); // Optional: set default fetch mode
+} catch (PDOException $e) {
+    // Log the error instead of dying in production
+    error_log("Database Connection Error: " . $e->getMessage()); 
+    // Display a user-friendly message
+    die("Database connection failed. Please try again later or contact support."); 
+}
+// --- Database Connection --- END ---
+
+// Pagination setup
+$invoicesPerPage = isset($_GET['per_page']) ? (int)$_GET['per_page'] : 10;
+$currentPage = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$offset = ($currentPage - 1) * $invoicesPerPage;
+
+// Search and filter parameters
+$search = isset($_GET['search']) ? $_GET['search'] : '';
+$statusFilter = isset($_GET['status']) ? $_GET['status'] : '';
+$sortBy = isset($_GET['sort']) ? $_GET['sort'] : 'date_desc';
+
+// Base query
+$baseQuery = "FROM invoices 
+              LEFT JOIN customers ON invoices.customer_id = customers.id 
+              WHERE 1=1";
+
+// Add search filter if provided
+if (!empty($search)) {
+    $baseQuery .= " AND (
+        invoices.invoice_number LIKE :search
+        OR customers.first_name LIKE :search
+        OR customers.last_name LIKE :search
+        OR CONCAT(customers.first_name, ' ', customers.last_name) LIKE :search
+    )";
+}
+
+// Add status filter if provided
+if (!empty($statusFilter)) {
+    $baseQuery .= " AND status = :status";
+}
+
+// Determine the sort order
+$orderBy = match($sortBy) {
+    'date_asc' => 'invoices.issue_date ASC',
+    'amount_desc' => 'invoices.total_amount DESC',
+    'amount_asc' => 'invoices.total_amount ASC',
+    default => 'invoices.issue_date DESC', // date_desc is default
+};
+
+$baseQuery .= " ORDER BY " . $orderBy;
+
+// Get total count for pagination
+$countQuery = "SELECT COUNT(*) as total " . $baseQuery;
+$stmt = $pdo->prepare($countQuery);
+
+if (!empty($search)) {
+    $stmt->bindValue(':search', "%$search%", PDO::PARAM_STR);
+}
+
+if (!empty($statusFilter)) {
+    $stmt->bindValue(':status', $statusFilter, PDO::PARAM_STR);
+}
+
+$stmt->execute();
+$totalCount = $stmt->fetch()['total'];
+$totalPages = ceil($totalCount / $invoicesPerPage);
+
+// Get paginated invoices
+$query = "SELECT invoices.*, customers.first_name as customer_first_name, customers.last_name as customer_last_name " . $baseQuery . " LIMIT :offset, :limit";
+$stmt = $pdo->prepare($query);
+
+if (!empty($search)) {
+    $stmt->bindValue(':search', "%$search%", PDO::PARAM_STR);
+}
+
+if (!empty($statusFilter)) {
+    $stmt->bindValue(':status', $statusFilter, PDO::PARAM_STR);
+}
+
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->bindValue(':limit', $invoicesPerPage, PDO::PARAM_INT);
+$stmt->execute();
+$invoices = $stmt->fetchAll();
+
+// Get summary statistics
+$statsQuery = "SELECT 
+               COUNT(*) as total_invoices,
+               SUM(CASE WHEN status = 'paid' THEN 1 ELSE 0 END) as paid_count,
+               SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_count,
+               SUM(CASE WHEN status = 'overdue' THEN 1 ELSE 0 END) as overdue_count,
+               SUM(total_amount) as total_amount
+               FROM invoices";
+$statsStmt = $pdo->query($statsQuery);
+$stats = $statsStmt->fetch();
+
+// Get recent customers for the modal
+$customersQuery = "SELECT id, first_name, last_name FROM customers ORDER BY id DESC LIMIT 10";
+$customersStmt = $pdo->query($customersQuery);
+$customers = $customersStmt->fetchAll();
 ?>
 
-<!-- Page header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="h3">Invoices <button class="btn btn-primary btn-sm ms-2" data-bs-toggle="modal" data-bs-target="#addInvoiceModal"><i class="fas fa-plus"></i></button></h2>
-    <div class="d-flex">
-        <div class="dropdown me-2">
-            <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="recordsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                10
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="recordsDropdown">
-                <li><a class="dropdown-item" href="#">10</a></li>
-                <li><a class="dropdown-item" href="#">25</a></li>
-                <li><a class="dropdown-item" href="#">50</a></li>
-                <li><a class="dropdown-item" href="#">100</a></li>
-            </ul>
-        </div>
-        <div class="text-muted mt-2">
-            Showing 1 - <?php echo min($invoicesPerPage, $totalInvoices); ?> of <?php echo $totalInvoices; ?>
-        </div>
-    </div>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/invoice.css">
+</head>
+<body>
+    <div class="container">
 
-<!-- Search and filter bar -->
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-6">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Search invoices..." aria-label="Search">
-                    <button class="btn btn-outline-secondary" type="button"><i class="fas fa-search"></i></button>
+        <main class="content">
+            <header class="top-bar">
+                <div class="search-global">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search globally...">
+                </div>
+                <div class="top-actions">
+                    <button class="notifications"><i class="fas fa-bell"></i></button>
+                    <button class="messages"><i class="fas fa-envelope"></i></button>
+                    <div class="user-dropdown">
+                        <img src="user-avatar.jpg" alt="User">
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+            </header>
+
+            <div class="page-header">
+                <div>
+                    <h1>Invoices</h1>
+                    <p>Manage your invoices and payments</p>
+                </div>
+                <button class="btn-primary" id="createInvoiceBtn">
+                    <i class="fas fa-plus"></i> Create Invoice
+                </button>
+            </div>
+
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <div class="stat-value"><?= number_format($stats['total_invoices']) ?></div>
+                    <div class="stat-label">Total Invoices</div>
+                    <div class="stat-icon"><i class="fas fa-file-invoice"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value"><?= number_format($stats['paid_count']) ?></div>
+                    <div class="stat-label">Paid</div>
+                    <div class="stat-icon paid"><i class="fas fa-check-circle"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value"><?= number_format($stats['pending_count']) ?></div>
+                    <div class="stat-label">Pending</div>
+                    <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value"><?= number_format($stats['overdue_count']) ?></div>
+                    <div class="stat-label">Overdue</div>
+                    <div class="stat-icon overdue"><i class="fas fa-exclamation-circle"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">$<?= number_format($stats['total_amount'], 2) ?></div>
+                    <div class="stat-label">Total Amount</div>
+                    <div class="stat-icon total"><i class="fas fa-dollar-sign"></i></div>
                 </div>
             </div>
-            <div class="col-md-3">
-                <select class="form-select" aria-label="Filter by status">
-                    <option value="">All Statuses</option>
-                    <option value="paid">Paid</option>
-                    <option value="pending">Pending</option>
-                    <option value="overdue">Overdue</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <select class="form-select" aria-label="Sort by">
-                    <option value="date_desc">Date (Newest)</option>
-                    <option value="date_asc">Date (Oldest)</option>
-                    <option value="amount_desc">Amount (High-Low)</option>
-                    <option value="amount_asc">Amount (Low-High)</option>
-                </select>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Invoices table -->
-<div class="card">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th width="40px">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="selectAll">
-                            </div>
-                        </th>
-                        <th>INVOICE #</th>
-                        <th>CUSTOMER</th>
-                        <th>DATE</th>
-                        <th>DUE DATE</th>
-                        <th>AMOUNT</th>
-                        <th>STATUS</th>
-                        <th>ACTION</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($paginatedInvoices as $invoice): ?>
-                    <tr>
-                        <td>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="<?php echo $invoice['id']; ?>">
-                            </div>
-                        </td>
-                        <td>
-                            <a href="index.php?page=invoice-details&id=<?php echo $invoice['id']; ?>" class="text-primary fw-bold">
-                                <?php echo $invoice['invoice_no']; ?>
-                            </a>
-                        </td>
-                        <td>
-                            <a href="index.php?page=customer-details&id=<?php echo $invoice['customer_id']; ?>">
-                                <?php echo $invoice['customer']; ?>
-                            </a>
-                        </td>
-                        <td><?php echo date('Y-m-d', strtotime($invoice['date'])); ?></td>
-                        <td><?php echo date('Y-m-d', strtotime($invoice['due_date'])); ?></td>
-                        <td>$<?php echo number_format($invoice['total'], 2); ?></td>
-                        <td>
-                            <?php if ($invoice['status'] === 'paid'): ?>
-                            <span class="badge bg-success">Paid</span>
-                            <?php elseif ($invoice['status'] === 'pending'): ?>
-                            <span class="badge bg-warning">Pending</span>
+            <div class="card filter-card">
+                <form action="invoices.php" method="GET" id="filterForm">
+                    <div class="filter-group">
+                        <div class="search-container">
+                            <i class="fas fa-search"></i>
+                            <input type="text" name="search" placeholder="Search invoices..." value="<?= htmlspecialchars($search) ?>">
+                        </div>
+                    </div>
+                    <div class="filter-group">
+                        <label for="status">Status</label>
+                        <select name="status" id="status">
+                            <option value="">All Statuses</option>
+                            <option value="paid" <?= $statusFilter === 'paid' ? 'selected' : '' ?>>Paid</option>
+                            <option value="pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Pending</option>
+                            <option value="overdue" <?= $statusFilter === 'overdue' ? 'selected' : '' ?>>Overdue</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="sort">Sort By</label>
+                        <select name="sort" id="sort">
+                            <option value="date_desc" <?= $sortBy === 'date_desc' ? 'selected' : '' ?>>Date (Newest)</option>
+                            <option value="date_asc" <?= $sortBy === 'date_asc' ? 'selected' : '' ?>>Date (Oldest)</option>
+                            <option value="amount_desc" <?= $sortBy === 'amount_desc' ? 'selected' : '' ?>>Amount (High-Low)</option>
+                            <option value="amount_asc" <?= $sortBy === 'amount_asc' ? 'selected' : '' ?>>Amount (Low-High)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <button type="submit" class="btn-filter">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                        <a href="invoices.php" class="btn-reset">
+                            <i class="fas fa-times"></i> Reset
+                        </a>
+                    </div>
+                    <input type="hidden" name="per_page" value="<?= $invoicesPerPage ?>">
+                    <input type="hidden" name="page" value="1">
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="table-header">
+                    <div class="table-actions">
+                        <div class="selected-actions">
+                            <span id="selectedCount">0</span> selected
+                            <button class="btn-icon" id="bulkDeleteBtn" disabled>
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                            <button class="btn-icon" id="bulkExportBtn" disabled>
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="per-page">
+                        <label for="per-page-select">Show</label>
+                        <select id="per-page-select" name="per_page">
+                            <option value="10" <?= $invoicesPerPage == 10 ? 'selected' : '' ?>>10</option>
+                            <option value="25" <?= $invoicesPerPage == 25 ? 'selected' : '' ?>>25</option>
+                            <option value="50" <?= $invoicesPerPage == 50 ? 'selected' : '' ?>>50</option>
+                            <option value="100" <?= $invoicesPerPage == 100 ? 'selected' : '' ?>>100</option>
+                        </select>
+                        <span>entries</span>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th class="checkbox-col">
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                                <th>Invoice #</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Due Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th class="actions-col">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (count($invoices) > 0): ?>
+                                <?php foreach ($invoices as $invoice): ?>
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="row-checkbox" data-id="<?= $invoice['id'] ?>">
+                                    </td>
+                                    <td>
+                                        <a href="invoice-details.php?id=<?= $invoice['id'] ?>" class="invoice-number">
+                                            <?= htmlspecialchars($invoice['invoice_number']) ?>
+                                        </a>
+                                    </td>
+                                    <td class="customer-cell">
+                                        <a href="customer-details.php?id=<?= $invoice['customer_id'] ?>" class="customer-name">
+                                            <?= htmlspecialchars($invoice['customer_first_name'] . ' ' . $invoice['customer_last_name']) ?>
+                                        </a>
+                                    </td>
+                                    <td><?= date('M d, Y', strtotime($invoice['issue_date'])) ?></td>
+                                    <td><?= date('M d, Y', strtotime($invoice['due_date'])) ?></td>
+                                    <td class="amount-cell">$<?= number_format($invoice['total_amount'], 2) ?></td>
+                                    <td>
+                                        <span class="status-badge status-<?= $invoice['status'] ?>">
+                                            <?= ucfirst($invoice['status']) ?>
+                                        </span>
+                                    </td>
+                                    <td class="actions-cell">
+                                        <div class="actions-dropdown">
+                                            <button class="btn-icon dropdown-toggle">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <a href="invoice-details.php?id=<?= $invoice['id'] ?>" class="dropdown-item">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                                <a href="edit-invoice.php?id=<?= $invoice['id'] ?>" class="dropdown-item">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </a>
+                                                <a href="#" class="dropdown-item print-invoice" data-id="<?= $invoice['id'] ?>">
+                                                    <i class="fas fa-print"></i> Print
+                                                </a>
+                                                <a href="download-invoice.php?id=<?= $invoice['id'] ?>" class="dropdown-item">
+                                                    <i class="fas fa-download"></i> Download
+                                                </a>
+                                                <a href="#" class="dropdown-item send-invoice" data-id="<?= $invoice['id'] ?>">
+                                                    <i class="fas fa-paper-plane"></i> Send
+                                                </a>
+                                                <div class="dropdown-divider"></div>
+                                                <a href="#" class="dropdown-item text-danger delete-invoice" data-id="<?= $invoice['id'] ?>">
+                                                    <i class="fas fa-trash-alt"></i> Delete
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
                             <?php else: ?>
-                            <span class="badge bg-danger">Overdue</span>
+                                <tr>
+                                    <td colspan="8" class="no-results">
+                                        <div class="empty-state">
+                                            <i class="fas fa-file-invoice"></i>
+                                            <h3>No invoices found</h3>
+                                            <p>Try changing your search criteria or create a new invoice</p>
+                                        </div>
+                                    </td>
+                                </tr>
                             <?php endif; ?>
-                        </td>
-                        <td>
-                            <div class="dropdown">
-                                <button class="btn btn-sm btn-link" type="button" id="dropdownMenuButton<?php echo $invoice['id']; ?>" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton<?php echo $invoice['id']; ?>">
-                                    <li><a class="dropdown-item" href="index.php?page=invoice-details&id=<?php echo $invoice['id']; ?>"><i class="fas fa-eye me-2"></i> View</a></li>
-                                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#editInvoiceModal" data-id="<?php echo $invoice['id']; ?>"><i class="fas fa-edit me-2"></i> Edit</a></li>
-                                    <li><a class="dropdown-item" href="#"><i class="fas fa-print me-2"></i> Print</a></li>
-                                    <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i> Download</a></li>
-                                    <li><a class="dropdown-item" href="#"><i class="fas fa-paper-plane me-2"></i> Send</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="#" data-bs-toggle="modal" data-bs-target="#deleteInvoiceModal" data-id="<?php echo $invoice['id']; ?>"><i class="fas fa-trash-alt me-2"></i> Delete</a></li>
-                                </ul>
-                            </div>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-footer">
+                    <div class="showing-entries">
+                        Showing <?= $offset + 1 ?> to <?= min($offset + $invoicesPerPage, $totalCount) ?> of <?= $totalCount ?> entries
+                    </div>
+                    
+                    <?php if ($totalPages > 1): ?>
+                    <div class="pagination">
+                        <a href="?page=1&per_page=<?= $invoicesPerPage ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($statusFilter) ?>&sort=<?= urlencode($sortBy) ?>" class="page-link <?= $currentPage == 1 ? 'disabled' : '' ?>">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                        <a href="?page=<?= max(1, $currentPage - 1) ?>&per_page=<?= $invoicesPerPage ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($statusFilter) ?>&sort=<?= urlencode($sortBy) ?>" class="page-link <?= $currentPage == 1 ? 'disabled' : '' ?>">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                        
+                        <?php
+                        $startPage = max(1, $currentPage - 2);
+                        $endPage = min($startPage + 4, $totalPages);
+                        
+                        if ($endPage - $startPage < 4 && $startPage > 1) {
+                            $startPage = max(1, $endPage - 4);
+                        }
+                        
+                        for ($i = $startPage; $i <= $endPage; $i++):
+                        ?>
+                            <a href="?page=<?= $i ?>&per_page=<?= $invoicesPerPage ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($statusFilter) ?>&sort=<?= urlencode($sortBy) ?>" class="page-link <?= $i == $currentPage ? 'active' : '' ?>">
+                                <?= $i ?>
+                            </a>
+                        <?php endfor; ?>
+                        
+                        <a href="?page=<?= min($totalPages, $currentPage + 1) ?>&per_page=<?= $invoicesPerPage ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($statusFilter) ?>&sort=<?= urlencode($sortBy) ?>" class="page-link <?= $currentPage == $totalPages ? 'disabled' : '' ?>">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                        <a href="?page=<?= $totalPages ?>&per_page=<?= $invoicesPerPage ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($statusFilter) ?>&sort=<?= urlencode($sortBy) ?>" class="page-link <?= $currentPage == $totalPages ? 'disabled' : '' ?>">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </main>
     </div>
-</div>
 
-<!-- Pagination -->
-<?php if ($totalInvoices > $invoicesPerPage): ?>
-<nav aria-label="Page navigation" class="mt-4">
-    <ul class="pagination justify-content-center">
-        <li class="page-item <?php echo ($currentPage <= 1) ? 'disabled' : ''; ?>">
-            <a class="page-link" href="<?php echo ($currentPage > 1) ? '?page=' . ($currentPage - 1) : '#'; ?>" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-            </a>
-        </li>
-        <?php for ($i = 1; $i <= ceil($totalInvoices / $invoicesPerPage); $i++): ?>
-        <li class="page-item <?php echo ($i == $currentPage) ? 'active' : ''; ?>">
-            <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
-        </li>
-        <?php endfor; ?>
-        <li class="page-item <?php echo ($currentPage >= ceil($totalInvoices / $invoicesPerPage)) ? 'disabled' : ''; ?>">
-            <a class="page-link" href="<?php echo ($currentPage < ceil($totalInvoices / $invoicesPerPage)) ? '?page=' . ($currentPage + 1) : '#'; ?>" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-            </a>
-        </li>
-    </ul>
-</nav>
-<?php endif; ?>
-
-<!-- Add Invoice Modal -->
-<div class="modal fade" id="addInvoiceModal" tabindex="-1" aria-labelledby="addInvoiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+    <!-- Create Invoice Modal -->
+    <div class="modal" id="createInvoiceModal">
+        <div class="modal-content large-modal">
             <div class="modal-header">
-                <h5 class="modal-title" id="addInvoiceModalLabel">Create New Invoice</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h2>Create New Invoice</h2>
+                <button class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="addInvoiceForm">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="customer" class="form-label">Customer</label>
-                            <select class="form-select" id="customer" name="customer_id" required>
-                                <option value="">Select Customer</option>
-                                <option value="1">Bendial Joseph</option>
-                                <option value="2">Peter Parker</option>
-                                <option value="3">Regina Cooper</option>
-                                <option value="4">John Smith</option>
-                                <option value="5">Jane Doe</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="invoiceDate" class="form-label">Invoice Date</label>
-                            <input type="date" class="form-control" id="invoiceDate" name="date" value="<?php echo date('Y-m-d'); ?>" required>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="dueDate" class="form-label">Due Date</label>
-                            <input type="date" class="form-control" id="dueDate" name="due_date" value="<?php echo date('Y-m-d', strtotime('+30 days')); ?>" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select" id="status" name="status" required>
-                                <option value="pending">Pending</option>
-                                <option value="paid">Paid</option>
-                                <option value="overdue">Overdue</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <h6 class="mt-4 mb-3">Invoice Items</h6>
-                    <div class="table-responsive mb-3">
-                        <table class="table table-bordered" id="invoiceItemsTable">
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th>Description</th>
-                                    <th>Quantity</th>
-                                    <th>Price</th>
-                                    <th>Total</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <input type="text" class="form-control" name="items[0][name]" required>
-                                    </td>
-                                    <td>
-                                        <input type="text" class="form-control" name="items[0][description]">
-                                    </td>
-                                    <td>
-                                        <input type="number" class="form-control item-quantity" name="items[0][quantity]" value="1" min="1" required>
-                                    </td>
-                                    <td>
-                                        <input type="number" class="form-control item-price" name="items[0][price]" value="0.00" step="0.01" required>
-                                    </td>
-                                    <td>
-                                        <input type="number" class="form-control item-total" name="items[0][total]" value="0.00" step="0.01" readonly>
-                                    </td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-danger remove-item"><i class="fas fa-times"></i></button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="6">
-                                        <button type="button" class="btn btn-sm btn-success" id="addItemBtn"><i class="fas fa-plus me-1"></i> Add Item</button>
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                    
-                    <div class="row justify-content-end">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span>Subtotal:</span>
-                                        <span id="subtotal">$0.00</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span>Tax (10%):</span>
-                                        <span id="tax">$0.00</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between fw-bold">
-                                        <span>Total:</span>
-                                        <span id="total">$0.00</span>
-                                    </div>
+                <form id="createInvoiceForm" action="save-invoice.php" method="POST">
+                    <div class="form-section">
+                        <h3>Invoice Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customer_id">Customer</label>
+                                <select id="customer_id" name="customer_id" required>
+                                    <option value="">Select Customer</option>
+                                    <?php foreach ($customers as $customer): ?>
+                                        <option value="<?= $customer['id'] ?>"><?= htmlspecialchars($customer['first_name'] . ' ' . $customer['last_name']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="invoice_date">Invoice Date</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-calendar"></i>
+                                    <input type="date" id="invoice_date" name="issue_date" value="<?= date('Y-m-d') ?>" required>
                                 </div>
                             </div>
                         </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="due_date">Due Date</label>
+                                <div class="input-icon">
+                                    <i class="fas fa-calendar"></i>
+                                    <input type="date" id="due_date" name="due_date" value="<?= date('Y-m-d', strtotime('+30 days')) ?>" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="status">Status</label>
+                                <select id="status" name="status" required>
+                                    <option value="pending">Pending</option>
+                                    <option value="paid">Paid</option>
+                                    <option value="overdue">Overdue</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-header">
+                            <h3>Invoice Items</h3>
+                            <button type="button" id="addItemBtn" class="btn-secondary">
+                                <i class="fas fa-plus"></i> Add Item
+                            </button>
+                        </div>
+                        
+                        <div class="invoice-items-table">
+                            <table id="invoiceItemsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Description</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="item-row">
+                                        <td>
+                                            <input type="text" name="items[0][name]" placeholder="Item name" required>
+                                        </td>
+                                        <td>
+                                            <input type="text" name="items[0][description]" placeholder="Description">
+                                        </td>
+                                        <td>
+                                            <input type="number" name="items[0][quantity]" class="item-quantity" value="1" min="1" required>
+                                        </td>
+                                        <td>
+                                            <input type="number" name="items[0][price]" class="item-price" value="0.00" step="0.01" required>
+                                        </td>
+                                        <td>
+                                            <span class="item-total">$0.00</span>
+                                            <input type="hidden" name="items[0][total]" value="0.00">
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn-icon remove-item">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="invoice-summary">
+                        <div class="summary-item">
+                            <span>Subtotal:</span>
+                            <span id="subtotal">$0.00</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Tax (10%):</span>
+                            <span id="tax">$0.00</span>
+                        </div>
+                        <div class="summary-item total">
+                            <span>Total:</span>
+                            <span id="total">$0.00</span>
+                        </div>
+                        <input type="hidden" name="subtotal" id="subtotal_input" value="0.00">
+                        <input type="hidden" name="tax_amount" id="tax_input" value="0.00">
+                        <input type="hidden" name="total_amount" id="total_input" value="0.00">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveInvoiceBtn">Save Invoice</button>
+                <button type="button" class="btn-secondary" id="cancelInvoiceBtn">Cancel</button>
+                <button type="button" class="btn-primary" id="saveInvoiceBtn">Save Invoice</button>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Delete Invoice Modal -->
-<div class="modal fade" id="deleteInvoiceModal" tabindex="-1" aria-labelledby="deleteInvoiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <!-- Delete Invoice Modal -->
+    <div class="modal" id="deleteInvoiceModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="deleteInvoiceModalLabel">Delete Invoice</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h2>Delete Invoice</h2>
+                <button class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to delete this invoice? This action cannot be undone.</p>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Are you sure you want to delete this invoice? This action cannot be undone.</p>
+                </div>
                 <input type="hidden" id="deleteInvoiceId">
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                <button type="button" class="btn-secondary" id="cancelDeleteBtn">Cancel</button>
+                <button type="button" class="btn-danger" id="confirmDeleteBtn">Delete</button>
             </div>
         </div>
     </div>
-</div>
-
-<script>
-    // Handle select all checkbox
-    document.getElementById('selectAll').addEventListener('change', function() {
-        var checkboxes = document.querySelectorAll('tbody .form-check-input');
-        for (var checkbox of checkboxes) {
-            checkbox.checked = this.checked;
-        }
-    });
     
-    // Handle delete invoice modal
-    document.querySelectorAll('[data-bs-target="#deleteInvoiceModal"]').forEach(function(element) {
-        element.addEventListener('click', function() {
-            var invoiceId = this.getAttribute('data-id');
-            document.getElementById('deleteInvoiceId').value = invoiceId;
-        });
-    });
-    
-    // Handle invoice item calculations
-    function updateInvoiceTotals() {
-        var subtotal = 0;
-        
-        // Calculate each line item total and subtotal
-        document.querySelectorAll('.item-quantity, .item-price').forEach(function(input) {
-            var row = input.closest('tr');
-            var quantity = parseFloat(row.querySelector('.item-quantity').value) || 0;
-            var price = parseFloat(row.querySelector('.item-price').value) || 0;
-            var total = quantity * price;
-            
-            row.querySelector('.item-total').value = total.toFixed(2);
-            subtotal += total;
-        });
-        
-        // Calculate tax and total
-        var tax = subtotal * 0.1; // 10% tax
-        var total = subtotal + tax;
-        
-        // Update the display
-        document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
-        document.getElementById('tax').textContent = '$' + tax.toFixed(2);
-        document.getElementById('total').textContent = '$' + total.toFixed(2);
-    }
-    
-    // Add event listeners to quantity and price inputs
-    document.addEventListener('input', function(e) {
-        if (e.target.classList.contains('item-quantity') || e.target.classList.contains('item-price')) {
-            updateInvoiceTotals();
-        }
-    });
-    
-    // Add new item row
-    document.getElementById('addItemBtn').addEventListener('click', function() {
-        var tbody = document.querySelector('#invoiceItemsTable tbody');
-        var rowCount = tbody.children.length;
-        var newRow = document.createElement('tr');
-        
-        newRow.innerHTML = `
-            <td>
-                <input type="text" class="form-control" name="items[${rowCount}][name]" required>
-            </td>
-            <td>
-                <input type="text" class="form-control" name="items[${rowCount}][description]">
-            </td>
-            <td>
-                <input type="number" class="form-control item-quantity" name="items[${rowCount}][quantity]" value="1" min="1" required>
-            </td>
-            <td>
-                <input type="number" class="form-control item-price" name="items[${rowCount}][price]" value="0.00" step="0.01" required>
-            </td>
-            <td>
-                <input type="number" class="form-control item-total" name="items[${rowCount}][total]" value="0.00" step="0.01" readonly>
-            </td>
-            <td>
-                <button type="button" class="btn btn-sm btn-danger remove-item"><i class="fas fa-times"></i></button>
-            </td>
-        `;
-        
-        tbody.appendChild(newRow);
-        updateInvoiceTotals();
-    });
-    
-    // Remove item row
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-item') || e.target.parentElement.classList.contains('remove-item')) {
-            var button = e.target.classList.contains('remove-item') ? e.target : e.target.parentElement;
-            var row = button.closest('tr');
-            
-            // Only remove if there's more than one row
-            if (document.querySelectorAll('#invoiceItemsTable tbody tr').length > 1) {
-                row.remove();
-                updateInvoiceTotals();
-            }
-        }
-    });
-    
-    // Handle save invoice button
-    document.getElementById('saveInvoiceBtn').addEventListener('click', function() {
-        // In a real application, you would submit the form data to the server
-        // For demonstration, we'll just close the modal
-        var modal = bootstrap.Modal.getInstance(document.getElementById('addInvoiceModal'));
-        modal.hide();
-        
-        // Show success message
-        alert('Invoice created successfully!');
-    });
-    
-    // Handle confirm delete button
-    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-        // In a real application, you would submit the delete request to the server
-        // For demonstration, we'll just close the modal
-        var modal = bootstrap.Modal.getInstance(document.getElementById('deleteInvoiceModal'));
-        modal.hide();
-        
-        // Show success message
-        alert('Invoice deleted successfully!');
-    });
-    
-    // Initialize calculations
-    updateInvoiceTotals();
-</script>
+    <script src="assets/js/invoice.js"></script>
+</body>
+</html>

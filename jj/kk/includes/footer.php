@@ -6,10 +6,9 @@
     <script src="assets/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/jquery.dataTables.min.js"></script>
     <script src="assets/js/chart.min.js"></script>
-    <script src="assets/js/sidebar.js"></script>
+    <script src="assets/js/sidebar-new.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/theme.js"></script>
-    <script src="assets/js/sidebar-fix.js"></script>
     
     <script>
     $(document).ready(function() {

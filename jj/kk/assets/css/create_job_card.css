@@ -1,0 +1,696 @@
+/* ===== صفحة إنشاء بطاقة عمل جديدة - أنماط متقدمة ===== */
+
+:root {
+  --primary-color: #4361ee;
+  --primary-hover: #3a56d4;
+  --secondary-color: #2ec4b6;
+  --success-color: #38b000;
+  --warning-color: #f9c74f;
+  --danger-color: #ef476f;
+  --light-color: #f8f9fa;
+  --dark-color: #212529;
+  --gray-100: #f8f9fa;
+  --gray-200: #e9ecef;
+  --gray-300: #dee2e6;
+  --gray-400: #ced4da;
+  --gray-500: #adb5bd;
+  --gray-600: #6c757d;
+  --gray-700: #495057;
+  --gray-800: #343a40;
+  --gray-900: #212529;
+  --border-radius: 8px;
+  --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+  --transition: all 0.3s ease;
+  --font-family: 'Cairo', 'Tajawal', sans-serif;
+}
+
+/* ===== تنسيقات عامة ===== */
+body {
+  font-family: var(--font-family);
+  background-color: #f5f7fa;
+  color: var(--gray-800);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* ===== ترويسة الصفحة ===== */
+.page-header {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #3a0ca3 100%);
+  border-radius: var(--border-radius);
+  padding: 30px;
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  box-shadow: var(--box-shadow);
+}
+
+.header-content h1 {
+  font-size: 28px;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+}
+
+.header-content p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 16px;
+}
+
+.header-actions .btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: var(--transition);
+}
+
+.header-actions .btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ===== حاوية النموذج ===== */
+.form-container {
+  background-color: white;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 30px;
+  margin-bottom: 30px;
+  transition: var(--transition);
+}
+
+.form-container:hover {
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.05), 0 5px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* ===== أقسام النموذج ===== */
+.form-section {
+  margin-bottom: 35px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid var(--gray-200);
+  position: relative;
+}
+
+.form-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.form-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  color: var(--gray-800);
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-right: 15px;
+}
+
+.form-section-title::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 5px;
+  height: 25px;
+  background-color: var(--primary-color);
+  border-radius: 3px;
+}
+
+.form-section-title i {
+  margin-left: 12px;
+  color: var(--primary-color);
+  font-size: 22px;
+}
+
+/* ===== صفوف النموذج ===== */
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -12px;
+}
+
+.form-group {
+  flex: 1 0 250px;
+  margin: 0 12px 20px;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--gray-700);
+  font-size: 14px;
+}
+
+.form-group .required {
+  color: var(--danger-color);
+  margin-right: 4px;
+}
+
+/* ===== حقول الإدخال ===== */
+.form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  font-size: 15px;
+  transition: var(--transition);
+  background-color: white;
+  color: var(--gray-800);
+}
+
+.form-control:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+  outline: none;
+}
+
+.form-control::placeholder {
+  color: var(--gray-500);
+}
+
+select.form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236c757d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 15px center;
+  padding-left: 40px;
+}
+
+textarea.form-control {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* ===== تنسيق Select2 ===== */
+.select2-container--default .select2-selection--single {
+  height: 45px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  padding: 8px 15px;
+  transition: var(--transition);
+}
+
+.select2-container--default .select2-selection--single:focus {
+  border-color: var(--primary-color);
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  height: 45px;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background-color: var(--primary-color);
+}
+
+.select2-dropdown {
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.select2-search--dropdown .select2-search__field {
+  padding: 8px 10px;
+  border: 1px solid var(--gray-300);
+  border-radius: 4px;
+}
+
+.select2-search--dropdown .select2-search__field:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+/* ===== أزرار إضافة جديد ===== */
+.add-new-btn {
+  display: flex;
+  align-items: center;
+  color: var(--primary-color);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  margin-top: 8px;
+  transition: var(--transition);
+}
+
+.add-new-btn i {
+  margin-left: 6px;
+  font-size: 16px;
+}
+
+.add-new-btn:hover {
+  color: var(--primary-hover);
+  text-decoration: none;
+}
+
+/* ===== معلومات العميل والمركبة ===== */
+.customer-vehicle-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 25px;
+  margin-top: 20px;
+}
+
+.customer-section, .vehicle-section {
+  flex: 1;
+  min-width: 300px;
+}
+
+.customer-info, .vehicle-info, .service-details {
+  background-color: var(--gray-100);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  margin-top: 15px;
+  border: 1px solid var(--gray-200);
+  transition: var(--transition);
+}
+
+.customer-info:hover, .vehicle-info:hover, .service-details:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.customer-info h3, .vehicle-info h3, .service-details h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: var(--gray-800);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--gray-300);
+}
+
+.info-row {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.info-label {
+  font-weight: 500;
+  width: 100px;
+  color: var(--gray-600);
+  font-size: 14px;
+}
+
+.info-value {
+  flex: 1;
+  color: var(--gray-800);
+  font-size: 14px;
+}
+
+/* ===== تفاصيل الخدمة ===== */
+.service-details {
+  background-color: var(--gray-100);
+}
+
+.service-price {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin: 15px 0 10px;
+}
+
+.service-duration {
+  color: var(--gray-600);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.service-duration::before {
+  content: '\f017';
+  font-family: 'Font Awesome 5 Free';
+  margin-left: 8px;
+  color: var(--gray-500);
+}
+
+/* ===== أوقات الحجز ===== */
+.time-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.time-slot {
+  padding: 10px 15px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 14px;
+  background-color: white;
+}
+
+.time-slot:hover {
+  border-color: var(--primary-color);
+  background-color: rgba(67, 97, 238, 0.05);
+}
+
+.time-slot.selected {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+/* ===== أزرار الإجراءات ===== */
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  font-size: 15px;
+  cursor: pointer;
+  transition: var(--transition);
+  border: none;
+  min-width: 120px;
+  height: 45px;
+}
+
+.btn i {
+  margin-left: 8px;
+  font-size: 16px;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--gray-700);
+  border: 1px solid var(--gray-300);
+}
+
+.btn-outline:hover {
+  background-color: var(--gray-100);
+  border-color: var(--gray-400);
+}
+
+.btn-secondary {
+  background-color: var(--gray-500);
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: var(--gray-600);
+}
+
+/* ===== النوافذ المنبثقة ===== */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  overflow-y: auto;
+  padding: 50px 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.modal.active {
+  display: block;
+  opacity: 1;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: var(--border-radius);
+  max-width: 600px;
+  margin: 0 auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transform: translateY(-20px);
+  transition: transform 0.3s ease;
+}
+
+.modal.active .modal-content {
+  transform: translateY(0);
+}
+
+.modal-header {
+  padding: 20px 25px;
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.close-modal:hover {
+  color: var(--danger-color);
+}
+
+.modal-body {
+  padding: 25px;
+}
+
+.modal-footer {
+  padding: 20px 25px;
+  border-top: 1px solid var(--gray-200);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ===== التنبيهات ===== */
+.alert {
+  padding: 15px 20px;
+  border-radius: var(--border-radius);
+  margin-bottom: 25px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.alert i {
+  margin-left: 15px;
+  font-size: 18px;
+  margin-top: 2px;
+}
+
+.alert-danger {
+  background-color: rgba(239, 71, 111, 0.1);
+  color: #d63384;
+  border-right: 4px solid #d63384;
+}
+
+.alert-success {
+  background-color: rgba(56, 176, 0, 0.1);
+  color: #2b9348;
+  border-right: 4px solid #2b9348;
+}
+
+.alert ul {
+  margin: 10px 0 0 0;
+  padding-right: 20px;
+}
+
+.alert ul li {
+  margin-bottom: 5px;
+}
+
+/* ===== تحسينات للأجهزة المحمولة ===== */
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .header-actions {
+    margin-top: 15px;
+    align-self: flex-start;
+  }
+  
+  .form-group {
+    flex: 1 0 100%;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .action-buttons .btn {
+    width: 100%;
+  }
+  
+  .modal-content {
+    max-width: 100%;
+  }
+}
+
+/* ===== تأثيرات إضافية ===== */
+.form-control:focus, .btn:focus, .select2-container--default .select2-selection--single:focus {
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.25);
+  outline: none;
+}
+
+/* تأثير النبض للزر الرئيسي */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(67, 97, 238, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(67, 97, 238, 0);
+  }
+}
+
+.btn-primary:focus {
+  animation: pulse 1.5s infinite;
+}
+
+/* تأثير التحميل */
+.loading {
+  position: relative;
+  pointer-events: none;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* تحسين مظهر التاريخ والوقت */
+input[type="date"], input[type="time"] {
+  position: relative;
+  padding-left: 40px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  filter: invert(0.5);
+  transition: var(--transition);
+}
+
+input[type="date"]:hover::-webkit-calendar-picker-indicator,
+input[type="time"]:hover::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+}
+
+/* تحسين مظهر الملاحظات */
+#notes {
+  background-image: linear-gradient(transparent, transparent calc(1.5em), #e9ecef 0px);
+  background-size: 100% 1.5em;
+  line-height: 1.5;
+  font-family: var(--font-family);
+}
+
+/* تأثير التحويم على بطاقات المعلومات */
+.customer-info, .vehicle-info, .service-details {
+  position: relative;
+  overflow: hidden;
+}
+
+.customer-info::before, .vehicle-info::before, .service-details::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(120deg, rgba(255,255,255,0) 30%, rgba(255,255,255,.7) 38%, rgba(255,255,255,0) 45%);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.customer-info:hover::before, .vehicle-info:hover::before, .service-details:hover::before {
+  opacity: 1;
+  animation: shine 1.5s infinite;
+}
+
+@keyframes shine {
+  to {
+    background-position: -100% 0;
+  }
+}
+
+/* تحسين مظهر الحقول المعطلة */
+.form-control:disabled, .form-control[readonly] {
+  background-color: var(--gray-100);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* تحسين مظهر الأخطاء */
+.form-control.is-invalid {
+  border-color: var(--danger-color);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23ef476f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3Cline x1='12' y1='8' x2='12' y2='12'%3E%3C/line%3E%3Cline x1='12' y1='16' x2='12.01' y2='16'%3E%3C/line%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 15px center;
+  padding-left: 40px;
+}
+
+.invalid-feedback {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  font-size: 13px;
+  color: var(--danger-color);
+}

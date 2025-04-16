@@ -45,10 +45,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_role'] = $user['role'];
             $_SESSION['user_email'] = $user['email'];
             
-            // No actualizamos last_login ya que la columna no existe
-            // $updateSql = "UPDATE users SET last_login = NOW() WHERE id = ?";
-            // dbQuery($updateSql, [$user['id']]);
-            
             // Set remember me cookie if requested
             if ($remember) {
                 $token = generateRandomToken(32);
@@ -88,10 +84,6 @@ if (!isset($_SESSION['user_id']) && isset($_COOKIE['remember_token'])) {
         $_SESSION['user_role'] = $user['role'];
         $_SESSION['user_email'] = $user['email'];
         
-        // No actualizamos last_login ya que la columna no existe
-        // $updateSql = "UPDATE users SET last_login = NOW() WHERE id = ?";
-        // dbQuery($updateSql, [$user['id']]);
-        
         header("Location: index.php");
         exit();
     }
@@ -112,36 +104,17 @@ function generateRandomToken($length = 32) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Garage Management System</title>
+    <!-- Google Fonts - Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="assets/css/style.css">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .login-container {
-            max-width: 400px;
-            margin: 100px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .logo img {
-            height: 60px;
-        }
-        .btn-primary {
-            background-color: #ff6b00;
-            border-color: #ff6b00;
-        }
-        .btn-primary:hover {
-            background-color: #e05e00;
-            border-color: #e05e00;
-        }
-    </style>
+    <link rel="stylesheet" href="assets/css/login.css">
 </head>
 <body>
     <div class="container">
@@ -152,40 +125,83 @@ function generateRandomToken($length = 32) {
             </div>
             
             <?php if ($error): ?>
-                <div class="alert alert-danger"><?php echo $error; ?></div>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <?php echo $error; ?>
+                </div>
             <?php endif; ?>
             
             <?php if ($registration_success): ?>
-                <div class="alert alert-success"><?php echo $success_message; ?></div>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>
+                    <?php echo $success_message; ?>
+                </div>
             <?php endif; ?>
             
-            <form method="post" action="">
+            <form method="post" action="" id="loginForm">
                 <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-envelope text-muted"></i>
+                        </span>
+                        <input type="email" class="form-control border-start-0" id="email" name="email" placeholder="Enter your email" required>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-lock text-muted"></i>
+                        </span>
+                        <input type="password" class="form-control border-start-0 border-end-0" id="password" name="password" placeholder="Enter your password" required>
+                        <span class="input-group-text bg-white border-start-0" style="cursor: pointer;">
+                            <i class="fas fa-eye" id="togglePassword"></i>
+                        </span>
+                    </div>
                 </div>
                 <div class="mb-3 form-check">
                     <input type="checkbox" class="form-check-input" id="remember" name="remember">
                     <label class="form-check-label" for="remember">Remember me</label>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Login</button>
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </button>
             </form>
             
-            <div class="mt-3 text-center">
-                <a href="forgot-password.php">Forgot Password?</a>
+            <div class="divider">
+                <span>OR</span>
+            </div>
+            
+            <div class="social-login">
+                <button class="social-btn" title="Login with Google">
+                    <i class="fab fa-google" style="color: #DB4437;"></i>
+                </button>
+                <button class="social-btn" title="Login with Facebook">
+                    <i class="fab fa-facebook-f" style="color: #4267B2;"></i>
+                </button>
+                <button class="social-btn" title="Login with Apple">
+                    <i class="fab fa-apple" style="color: #000000;"></i>
+                </button>
             </div>
             
             <div class="mt-3 text-center">
-                <p>Don't have an account? <a href="register.php">Register</a></p>
+                <a href="forgot-password.php">
+                    <i class="fas fa-key me-1"></i>Forgot Password?
+                </a>
+            </div>
+            
+            <div class="mt-3 text-center">
+                <p>Don't have an account? <a href="register.php"><i class="fas fa-user-plus me-1"></i>Register</a></p>
             </div>
         </div>
     </div>
 
+    <!-- jQuery -->
     <script src="assets/js/jquery.min.js"></script>
+    <!-- Bootstrap JS -->
     <script src="assets/js/bootstrap.min.js"></script>
+    <!-- Custom JS -->
+    <script src="assets/js/login.js"></script>
 </body>
 </html>
